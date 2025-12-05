@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./BookRentalStore
+      dockerfile: Dockerfile
+    container_name: backend-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - minha_rede
+    restart: always
+
+  web:
+    build:
+      context: ./LocadoraWDA
+      dockerfile: Dockerfile.frontend
+    container_name: frontend-web
+    ports:
+      - "80:80"
+    networks:
+      - minha_rede
+    depends_on:
+      - api
+    restart: always
+
+networks:
+  minha_rede:
+    driver: bridge
