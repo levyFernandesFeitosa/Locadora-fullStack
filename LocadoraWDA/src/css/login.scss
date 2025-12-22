@@ -1,0 +1,159 @@
+// Container principal (q-card)
+.q-card-login-responsive {
+    // Para desktop, limita o tamanho para não ficar muito grande.
+    width: 70%;
+    max-width: 1000px;
+    height: 70%;
+    max-height: 800px;
+    // Garante que o row funcione como um flexbox
+    display: flex;
+}
+
+// Lado Esquerdo - Desktop
+.containerLeft {
+    // As classes col-md-5 e hidden-sm hidden-xs controlam a largura.
+    height: 100%;
+    padding: 3%;
+    background-color: #274e55;
+    color: white;
+    
+    // Raio da borda específico para desktop (lado esquerdo)
+    border-top-left-radius: 3vh !important;
+    border-bottom-left-radius: 3vh !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    @media (max-width: 460px) {
+        width: 100%;
+        border-radius: 1vh !important;
+    }
+}
+
+.containerLeft{
+    @media (max-width: 460px) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+// Lado Direito - Desktop
+.containerRight {
+    // A classe col-md-7 controla a largura.
+    height: 100%;
+    padding: 5%; 
+    background-color: white; // Garante o fundo branco
+    
+    // Raio da borda específico para desktop (lado direito)
+    border-top-right-radius: 3vh !important;
+    border-bottom-right-radius: 3vh !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    @media (max-width: 460px) {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+// Estilos de texto
+.text1, .text2 {
+    font-size: 5vh;
+    font-family: 'Merriweather', serif;
+}
+.text3 {
+    font-size: 3vh;
+    font-family: 'Merriweather', serif;
+}
+.text4 {
+    font-size: 5vh;
+    font-family: 'Merriweather', serif;
+    margin-bottom: 5vh;
+}
+
+// Estilos do Formulário
+.campos {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto; // Centraliza o formulário
+    @media (max-width: 460px) {
+        gap: 2vh;
+    }
+}
+.q-input {
+    width: 100%;
+    height: 8vh;
+    font-size: 2vh;
+    margin-bottom: 2vh;
+}
+.q-btn {
+    width: 30%;
+    height: 5vh; // Altura corrigida
+    font-size: 2vh;
+    border-radius: 1vh;
+    margin-top: 2vh;
+}
+img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.logoWDA {
+    width: 20%;
+    max-width: 150px; // Limita o tamanho do logo 
+    @media (max-width: 460px) {
+        width: 40%;
+        margin-left: 30%;
+    }
+}
+
+
+// -------------------------------------------------------------------
+// MEDIA QUERY: ESTILOS PARA TABLET E CELULAR (<= $breakpoint-sm-max)
+// -------------------------------------------------------------------
+@media (max-width: $breakpoint-sm-max) {
+    
+    // O Card deve ocupar quase toda a tela no mobile/tablet
+    .q-card-login-responsive {
+        width: 100% !important;
+        height: auto !important; 
+        max-width: 95% !important; 
+        // Borda menor e uniforme
+        border-radius: 1vh !important; 
+        margin-top: 50px; 
+    }
+
+    // Lado Direito (Formulário) - Agora 100% da largura
+    .containerRight {
+        padding: 6% 3% 6% 3%; 
+        border-radius: 1vh !important; // Bordas aplicadas em todos os cantos
+    }
+    
+    // Reduz o tamanho da fonte para mobile/tablet
+    .text1, .text2 {
+        font-size: 2.8vh; // Reduzido
+    }
+    .text3, .text4 {
+        font-size: 2.2vh; // Reduzido
+        margin-bottom: 2vh;
+    }
+
+    // Formulário
+    .campos {
+        width: 100%; 
+    }
+    
+    
+    // Ajuste no seletor de idioma para telas menores
+    .language-selector-container {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+}

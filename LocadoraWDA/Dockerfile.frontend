@@ -1,0 +1,40 @@
+# === Stage 1: Build Frontend (Quasar) ===
+# Using node:lts-slim as the base image for building
+FROM node:lts-slim AS build
+WORKDIR /app
+
+# 1. Copy package files
+COPY package*.json ./
+
+# 2. Install dependencies (this installs 'quasar' locally in node_modules/.bin/)
+RUN npm install --legacy-peer-deps
+
+# 3. Copy application source code
+COPY . .
+
+# 4. Constrói o aplicativo Quasar para produção
+# FIX: Use 'npx' to execute the locally installed 'quasar' binary.
+RUN npx quasar build
+
+# === Stage 2: Serve using Nginx ===
+# Using a lightweight Nginx image for the final runtime stage
+FROM nginx:alpine AS final
+
+# Remove default Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom Nginx configuration (assuming you have an nginx.conf for proxying/serving)
+# If you don't have this, you might need to adjust this line.
+COPY nginx.conf /etc/nginx/conf.d/
+
+# Copy the static assets built by Quasar from the 'build' stage
+# Adjust 'dist/spa' if you are building to a different output directory (e.g., 'dist/pwa' or 'dist/ssr')
+COPY --from=build /app/dist/spa /usr/share/nginx/html
+
+RUN chmod -R 755 /usr/share/nginx/html
+
+# Expose the standard HTTP port
+EXPOSE 80
+
+# Command to start Nginxhhhhh
+CMD ["nginx", "-g", "daemon off;"]

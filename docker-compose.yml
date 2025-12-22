@@ -1,6 +1,28 @@
 version: '3.8'
 
 services:
+  # 1. NOVO SERVIÇO: BANCO DE DADOS POSTGRESQL
+  database:
+    image: postgres:15-alpine # Imagem leve e estável
+    container_name: postgres-db
+    ports:
+      - "5432:5432" # Mapeia a porta padrão do Postgres (se quiser acessar fora do Docker)
+    environment:
+      # Essas variáveis DEVEM corresponder à sua configuração no Spring Boot
+      POSTGRES_DB: BookRentalStore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    networks:
+      - minha_rede
+    # Recomendado: Para garantir que o banco de dados esteja pronto antes da API
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # 2. SERVIÇO API: Adicionar dependência do banco de dados
   api:
     build:
       context: ./BookRentalStore
@@ -10,10 +32,20 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      # DEFINIÇÕES DE BANCO DE DADOS DENTRO DO CONTÊINER DA API:
+      # O HOSTNAME agora é 'database', o nome do serviço acima.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/BookRentalStore 
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      API_SECURITY_TOKEN_SECRET: 41B2C8F7A5E9D0B6F3E1A2C8D9E0F7A5B4C3D2E1F0A9B8C7D6E5F4A3B2C1D0E9
     networks:
       - minha_rede
+    depends_on:
+      database:
+        condition: service_healthy # Garante que o banco esteja pronto antes de iniciar a API
     restart: always
 
+  # 3. SERVIÇO WEB (Frontend):
   web:
     build:
       context: ./LocadoraWDA
@@ -23,8 +55,9 @@ services:
       - "80:80"
     networks:
       - minha_rede
+    # Agora depende da API para que o Nginx tente proxyar só depois que a API estiver rodando
     depends_on:
-      - api
+      - api 
     restart: always
 
 networks:

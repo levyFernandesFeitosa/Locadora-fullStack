@@ -1,0 +1,575 @@
+ // app global css in SCSS form
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logoWDAALL {
+  margin-left: 5%;
+  margin-top: 5%;
+  margin-bottom: 5.5%;
+  width: 35%;
+}
+
+.q-list {
+  width: 100%;
+  min-width: 10%;
+  font-size: 3vh;
+  font-family: 'Merriweather', serif;
+}
+
+.header-left {
+  width: auto;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 1%;
+}
+
+.menu-btn {
+  width: 10%;
+  @media (max-width: 460px) {
+    margin-bottom: 15%;
+  }
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.app-title {
+  margin-left: 2%;
+  font-size: 3.5vh;
+  color: #edead0;
+  font-weight: bold;
+
+  @media (max-width: 460px) {
+    font-size: 2.5vh;
+  }
+}
+
+.pesquisaALL .q-field__control {
+  background-color: #ffffff !important;
+  /* cor desejada */
+  transition: background 0.2s;
+}
+
+.pesquisaALL.q-field--focused .q-field__control {
+  background-color: #edead0 !important;
+  /* cor quando focado */
+  color: black !important;
+}
+
+.pesquisaALL .q-field__control {
+  margin-top: 1%;
+  
+
+  @media (max-width: 460px) {
+    // lg e xl
+    width: 100% !important;
+
+  }
+  @media (min-width: 1440px) {
+    margin-top: 4%;
+  }
+}
+
+.pesquisaALL .q-field__native {
+  margin: 0 !important;
+}
+
+.CadastroBTN {
+  background-color: #00bfa6 !important;
+  color: white !important;
+  font-size: 3vh !important;
+  padding-left: 5%;
+  padding-right: 5%;
+  border-radius: 1vh !important;
+  width: 100% !important;
+  margin-bottom: 5%;
+
+  @media (max-width: 460px) {
+    // lg e xl
+    width: 100% !important;
+    margin-top: -5% !important;
+    padding-left: 0% !important;
+    padding-right: 0% !important;
+    font-size: 2vh !important;
+
+    
+  }
+
+  @media (min-width: 1440px) {
+    font-size: 2.4vh !important;
+  }
+}
+
+.MenuBTN {
+  background-color: #00bfa6 !important;
+  color: #f5f5f5 !important;
+  font-size: 2vh !important;
+  border-radius: 1vh !important;
+  margin-bottom: 5%;
+  width: 100% !important;
+  height: 100% !important;
+
+  @media (max-width: 460px) {
+    width: 100% !important;
+    margin-bottom: 10% !important;
+  }
+}
+
+#MenuBTN {
+  margin-left: 5%;
+}
+
+.titulo {
+  font-size: 5vh;
+  font-weight: bold;
+  color: #f5f5f5;
+  @media (max-width: 460px) {
+    font-size: 3.5vh;
+    margin-bottom: 5%;
+  }
+}
+
+.modal {
+  width: 100% !important;
+  border-radius: 5vh !important;
+  margin-left: 10%;
+  margin-top: 2%;
+  background-color: #0d1b2a;
+  @media (max-width: 460px) {
+    margin-left: 0% !important;
+    border-radius: 2vh !important;
+  }
+}
+
+.inputModal .q-field__native,
+.inputModal .q-field__label,
+.inputModalSelect .q-field__native,
+.inputModalSelect .q-field__label {
+  color: #f5f5f5 !important;
+  padding-left: 2%;
+}
+
+.inputModalSelect {
+  width: 100% !important;
+  max-width: 100% !important;
+  
+  @media (min-width: 1440px) {
+    margin-bottom: 5%;
+  }
+}
+
+.inputModal .q-field__control,
+.inputModalSelect .q-field__control {
+  background-color: transparent !important;
+  /* igual ao input */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  /* borda branca */
+  border-radius: 8px;
+  color: #f5f5f5 !important;
+}
+
+.inputModal.q-field--focused .q-field__control,
+.inputModalSelect.q-field--focused .q-field__control {
+  border-color: #274e55 !important;
+  /* mesma cor quando focado */
+  background-color: #0d1b2a !important;
+}
+
+.inputModal.q-field--error .q-field__control:before,
+.inputModal.q-field--error .q-field__control:after {
+  /* Altera a cor da borda do input outlined para vermelho do Quasar */
+  border-color: var(--q-negative) !important;
+}
+
+// ** INÍCIO DA CORREÇÃO PARA Q-SELECT **
+.inputModalSelect.q-field--error .q-field__control:before,
+.inputModalSelect.q-field--error .q-field__control:after {
+  /* Altera a cor da borda do Q-Select outlined para vermelho do Quasar */
+  border-color: var(--q-negative) !important;
+}
+// ** FIM DA CORREÇÃO **
+
+.q-field__prepend {
+  display: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+.q-field__control {
+  padding-left: 0 !important;
+}
+
+.inputModal .q-field__control {
+  padding-left: 0 !important;
+}
+
+/* Texto dentro do dropdown */
+.q-menu .q-item {
+  color: black !important;
+  /* lista legível */
+}
+
+.modalCertificando {
+
+  width: 30% !important;
+  height: 35%;
+  border-radius: 5vh !important;
+  margin-left: 10%;
+  margin-top: 3%;
+  padding-bottom: 3% !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #f5f5f5;
+  background: #0d1b2a;
+  @media (min-width: 1440px) {
+    width: 30% !important;
+    height: 25% !important;
+    margin-top: 0% !important;
+    padding-bottom: 3% !important;
+  }
+  @media (max-width: 460px) {
+    width: 100% !important;
+    height: auto;
+    font-size: 2vh;
+    margin-left: 0% !important;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalMenu {
+  width: 100% !important;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #f5f5f5;
+  /* muda pra branco pra contrastar com fundo escuro */
+  background: rgba(0, 0, 0, 0.6);
+  /* preto com 60% de opacidade */
+  backdrop-filter: blur(10px);
+  /* efeito glassmorphism */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease-in-out;
+  border-radius: 3vh;
+  animation: slideDown 0.5s ease-out forwards;
+}
+
+.modalMenu .titulo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #0d1b2a;
+  /* combina com fundo escuro */
+}
+
+.modalMenu .info {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.modalMenu .info span {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.menu-transparente {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tituloModal {
+  width: 100%;
+  margin-bottom: 2%;
+  margin-top: 2%;
+  font-size: 4vh;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  @media (min-width: 1440px) {
+    margin-bottom: 2%;
+  }
+}
+
+.conteudoModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 65%;
+  gap: 2vh;
+
+  @media (min-width: 1440px) {
+    gap: 0;
+  }
+}
+
+.botoesModal {
+  width: 100%;
+  height: 10% !important;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2vh;
+  @media (min-width: 1440px) {
+    margin-bottom: 2%;
+  }
+}
+
+.modalBTN {
+  background-color: #274e55 !important;
+  color: white !important;
+  font-size: 2.5vh !important;
+  border-radius: 1vh !important;
+  width: 30% !important;
+  height: 100% !important;
+  @media (max-width: 460px) {
+    width: 40% !important;
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+}
+
+.linha-destacada {
+  background-color: #0d1b2a;
+  color: white;
+}
+
+/* === GRID PRINCIPAL === */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  /* pizza | barras | totais */
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  background-color: #274e55;
+  gap: 2%;
+  border-radius: 2vh;
+  padding: 1%;
+
+  @media (max-width: 460px) {
+    // lg e xl
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 5%;
+  }
+}
+#graficoLivrosMaisAlugados{
+  height: 40vh !important;
+}
+
+/* === CARDS DE GRÁFICO === */
+.card {
+  background: #edead0;
+  border-radius: 2vh;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 35%;
+  height: 30%;
+
+  @media (max-width: 460px) {
+    // lg e xl
+    width: 90%;
+    margin-top: 5%;
+  }
+}
+
+.card canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 30vh;
+}
+
+/* === CARDS DE TOTAIS === */
+.cards-coluna {
+  display: flex;
+  flex-direction: column;
+  width: 26%;
+  min-height: 10%;
+
+  @media (max-width: 460px) {
+    // lg e xl
+    width: 90% !important;
+    margin-top: 5%;
+  }
+}
+
+.card-total {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 2vh;
+  font-weight: bold;
+  text-align: center;
+  background-color: #edead0;
+  color: #303030;
+  border-radius: 1vh;
+}
+
+/* === RESPONSIVIDADE === */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cards-coluna {
+    flex-direction: row;
+  }
+
+  .card-total {
+    flex: none;
+    width: 50%;
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cards-coluna {
+    flex-direction: column;
+  }
+
+  .card-total {
+    width: 100%;
+    height: 120px;
+  }
+}
+
+.minha-tabela-moderna {
+  // Configuração principal da tabela
+  border-radius: 12px;
+  /* Cantos arredondados */
+  overflow: hidden;
+  /* Crucial para o border-radius funcionar com o Quasar */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  /* Sombra mais destacada */
+}
+
+/* Estilos para o Seletor de Idioma */
+.language-selector-container {
+  /* Fixa o elemento na tela, no topo e à direita */
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 9999;
+  /* Garante que fique acima de outros elementos */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Estilos para o Menu Dropdown das Bandeiras */
+.language-menu {
+  margin-top: 5px;
+  background: white;
+  border-radius: 4px;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+}
+
+.stats {
+  width: 100%;
+}
+
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  
+}
+
+
+
+.cards-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.paginacao {
+  justify-content: center;
+  align-items: center;
+}
+
+/* Adicione isso em um arquivo .scss que está sendo carregado globalmente */
+.dialogo-escuro {
+    background-color: #0d1b2a !important;
+}
+
+/* É comum que o Quasar adicione uma div extra ao redor */
+.dialogo-escuro .q-card {
+    background-color: #0d1b2a !important;
+}
+
+.language-selector{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.flag-btn {
+  margin-left: 9%;
+  width: 10% !important;
+  @media (max-width: 480px) {
+    margin-left: 0%;
+    width: 25% !important;
+  }
+}
+
+.q-field--filled,
+.q-field--outlined,
+.q-field--standard {
+  // O elemento nativo do input ou textarea dentro do q-field
+  .q-field__native {
+    padding-left: 1vh;
+    font-size: 2.5vh;
+  }
+}
+.q-field__label {
+    left: 1vh; // Move o rótulo para a mesma posição do padding-left
+  }
+
+.pesquisaALL {
+  .q-field__native {
+    padding-left: 2.5vh; 
+    color: black !important;
+  }
+}
