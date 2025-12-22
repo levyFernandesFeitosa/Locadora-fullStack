@@ -1,3 +1,4 @@
+import { boot } from 'quasar/wrappers'
 import { createI18n } from 'vue-i18n';
 // Importação direta dos arquivos para garantir que o bundler inclua o conteúdo
 import ptBR from '../i18n/pt-BR';
