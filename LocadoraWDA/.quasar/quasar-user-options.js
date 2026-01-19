@@ -11,11 +11,13 @@
  * Boot files are your "main.js"
  **/
 
+import lang from 'quasar/lang/pt-BR.js'
+
 
 
 import {Notify,Dialog} from 'quasar'
 
 
 
-export default { config: {"notify":{"position":"top-right","timeout":3000}},plugins: {Notify,Dialog} }
+export default { config: {"notify":{"position":"top-right","timeout":3000}},lang,plugins: {Notify,Dialog} }
 

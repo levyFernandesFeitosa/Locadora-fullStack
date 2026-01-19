@@ -21,6 +21,30 @@ const authService = {
     }
   },
 
+  async forgotPassword(email) {
+    try {
+      // O backend espera o e-mail no corpo da requisição
+      const response = await api.post('/auth/forgot-password', { email }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async resetPassword(email, newPassword) {
+    try {
+      const response = await api.post('/auth/reset-password', {
+        email: email,
+        password: newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   logout() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userInfo');

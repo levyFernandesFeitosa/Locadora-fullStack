@@ -14,21 +14,21 @@
               color="primary"
             />
             <span class="text-white text-weight-bold ellipsis">{{
-              $t("BooksPage.title")
+              $t("BooksPage_title")
             }}</span>
           </div>
         </div>
 
         <div
+          v-if="userRole === 'ADMIN'"
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
             class="CadastroBTN"
-            :label="$t('BooksPage.register_button')"
+            :label="$t('BooksPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
-            :disable="userRole === 'USER'"
           />
         </div>
 
@@ -37,7 +37,7 @@
             class="pesquisaALL"
             standout
             v-model="termoPesquisa"
-            :label="$t('BooksPage.search_placeholder')"
+            :label="$t('BooksPage_search_placeholder')"
             debounce="300"
             clearable
           >
@@ -68,7 +68,7 @@
           <q-th v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.label }}
           </q-th>
-          <q-th>{{ $t("BooksPage.actions_header") }}</q-th>
+          <q-th v-if="userRole === 'ADMIN'">{{ $t("BooksPage_actions_header") }}</q-th>
         </q-tr>
       </template>
 
@@ -76,18 +76,17 @@
         <q-tr :props="props">
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.name === 'bookLaunch'">{{
-              col.format(col.value)
+              formatarDataExibicao(props.row.bookLaunch)
             }}</span>
             <span v-else>{{ col.value }}</span>
           </q-td>
-          <q-td>
+          <q-td v-if="userRole === 'ADMIN'">
             <q-btn
               dense
               flat
               icon="edit"
               color="primary"
               @click="abrirModalEdicao(props.row)"
-              :disable="userRole === 'USER'"
             />
             <q-btn
               dense
@@ -95,7 +94,6 @@
               icon="delete"
               color="negative"
               @click="confirmarExclusao(props.row.id)"
-              :disable="userRole === 'USER'"
             />
           </q-td>
         </q-tr>
@@ -114,7 +112,7 @@
                 </div>
                 <div class="col-7 text-black">
                   <span v-if="col.name === 'bookLaunch'">
-                    {{ col.format(col.value) }}
+                    {{ formatarDataExibicao(props.row.bookLaunch) }}
                   </span>
                   <span v-else>
                     {{ col.value }}
@@ -125,14 +123,13 @@
 
             <q-separator />
 
-            <q-card-actions align="right">
+            <q-card-actions align="right" v-if="userRole === 'ADMIN'">
               <q-btn
                 dense
                 flat
                 icon="edit"
                 color="primary"
                 @click="abrirModalEdicao(props.row)"
-                :disable="userRole === 'USER'"
               />
               <q-btn
                 dense
@@ -140,7 +137,6 @@
                 icon="delete"
                 color="negative"
                 @click="confirmarExclusao(props.row.id)"
-                :disable="userRole === 'USER'"
               />
             </q-card-actions>
           </q-card>
@@ -150,7 +146,7 @@
         <q-inner-loading
           showing
           color="primary"
-          :label="$t('BooksPage.loading_books')"
+          :label="$t('BooksPage_loading_books')"
         />
       </template>
     </q-table>
@@ -161,8 +157,8 @@
             <div class="tituloModal">
               {{
                 editando
-                  ? $t("BooksPage.modal_update_title")
-                  : $t("BooksPage.modal_register_title")
+                  ? $t("BooksPage_modal_update_title")
+                  : $t("BooksPage_modal_register_title")
               }}
             </div>
 
@@ -170,7 +166,7 @@
               class="inputModal"
               outlined
               v-model="livroForm.bookTitle"
-              :label="$t('BooksPage.input_title_label')"
+              :label="$t('BooksPage_input_title_label')"
               :error="errosCadastro.bookTitle"
               error-color="negative"
               @input="validarCampo('bookTitle')"
@@ -180,7 +176,7 @@
               class="inputModal"
               outlined
               v-model="livroForm.bookAuthor"
-              :label="$t('BooksPage.input_author_label')"
+              :label="$t('BooksPage_input_author_label')"
               :error="errosCadastro.bookAuthor"
               error-color="negative"
               @input="validarCampo('bookAuthor')"
@@ -189,20 +185,40 @@
             <q-input
               class="inputModal"
               outlined
-              v-model="livroForm.bookLaunch"
-              :label="$t('BooksPage.input_launch_date_label')"
-              type="date"
-              stack-label
+              :model-value="formattedLaunchDate"
+              readonly
+              :label="$t('BooksPage_input_launch_date_label')"
               :error="errosCadastro.bookLaunch"
               error-color="negative"
-              @input="validarCampo('bookLaunch')"
-            />
+            >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy
+                    cover
+                    transition-show="scale"
+                    transition-hide="scale"
+                  >
+                    <q-date
+                      v-model="livroForm.bookLaunch"
+                      mask="YYYY-MM-DD"
+                      color="primary"
+                      today-btn
+                      @update:model-value="validarCampo('bookLaunch')"
+                    >
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup :label="t('RentersPage_close_button')" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
 
             <q-input
               class="inputModal"
               outlined
               v-model.number="livroForm.bookTotal"
-              :label="$t('BooksPage.input_total_quantity_label')"
+              :label="$t('BooksPage_input_total_quantity_label')"
               type="number"
               min="1"
               step="1"
@@ -216,7 +232,7 @@
               outlined
               v-model="livroForm.publisherName"
               :options="opcoesEditoras"
-              :label="$t('BooksPage.input_publisher_label')"
+              :label="$t('BooksPage_input_publisher_label')"
               :error="errosCadastro.publisherName"
               error-color="negative"
               @update:model-value="validarCampo('publisherName')"
@@ -227,8 +243,8 @@
               class="modalBTN"
               :label="
                 editando
-                  ? $t('BooksPage.update_button')
-                  : $t('BooksPage.register_button')
+                  ? $t('BooksPage_update_button')
+                  : $t('BooksPage_register_button')
               "
               color="primary"
               type="submit"
@@ -236,7 +252,7 @@
             />
             <q-btn
               class="modalBTN"
-              :label="$t('BooksPage.cancel_button')"
+              :label="$t('BooksPage_cancel_button')"
               @click="fecharModal"
             />
           </q-card-actions>
@@ -248,20 +264,20 @@
       <q-card class="modalCertificando" style="">
         <q-card-section class="conteudoModal text-center">
           <div class="text-h6 lt-sm:text-body1">
-            {{ $t("BooksPage.confirm_delete_q1") }}
-            {{ $t("BooksPage.confirm_delete_q2") }}
+            {{ $t("BooksPage_confirm_delete_q1") }}
+            {{ $t("BooksPage_confirm_delete_q2") }}
           </div>
         </q-card-section>
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('BooksPage.delete_button')"
+            :label="$t('BooksPage_delete_button')"
             color="negative"
             @click="deletarLivroConfirmado"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('BooksPage.back_button')"
+            :label="$t('BooksPage_back_button')"
             flat
             @click="modalExcluir = false"
           />
@@ -273,7 +289,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
-import { useQuasar } from "quasar";
+import { useQuasar, date } from "quasar";
 import { useI18n } from "vue-i18n";
 import LivrosService from "src/services/livrosService";
 
@@ -282,7 +298,8 @@ function getCurrentUserRole() {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
     try {
-      return JSON.parse(userInfo).role;
+      const role = JSON.parse(userInfo).role;
+      return role ? String(role).trim().toUpperCase() : null;
     } catch (e) {
       return null;
     }
@@ -318,48 +335,66 @@ const salvando = ref(false);
 const modalExcluir = ref(false);
 const livroParaDeletarId = ref(null);
 
+const formatarDataExibicao = (val) => {
+  if (!val) return "";
+  
+  const dateStr = String(val).substring(0, 10);
+  if (dateStr === "undefined" || dateStr === "null" || dateStr === "") {
+    return "";
+  }
+
+  // Divide a string YYYY-MM-DD para evitar que o JS interprete como UTC
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const dateObj = new Date(year, month - 1, day);
+
+  const format = locale.value.startsWith("en") ? "MM/DD/YYYY" : "DD/MM/YYYY";
+  return date.formatDate(dateObj, format);
+};
+
+const formattedLaunchDate = computed(() => {
+  return livroForm.value.bookLaunch ? formatarDataExibicao(livroForm.value.bookLaunch) : "";
+});
+
 const columns = computed(() => [
   {
     name: "bookTitle",
-    label: t("BooksPage.column_title"),
+    label: t("BooksPage_column_title"),
     field: "bookTitle",
     align: "left",
     sortable: true,
   },
   {
     name: "bookAuthor",
-    label: t("BooksPage.column_author"),
+    label: t("BooksPage_column_author"),
     field: "bookAuthor",
     align: "left",
     sortable: true,
   },
   {
     name: "bookLaunch",
-    label: t("BooksPage.column_launch_date"),
+    label: t("BooksPage_column_launch_date"),
     field: "bookLaunch",
     align: "center",
     sortable: true,
-    format: (val) =>
-      val ? val.substring(0, 10) : t("BooksPage.not_applicable"),
   },
   {
     name: "bookTotal",
-    label: t("BooksPage.column_total"),
+    label: t("BooksPage_column_total"),
     field: "bookTotal",
     align: "center",
     sortable: true,
   },
   {
     name: "bookInUse",
-    label: t("BooksPage.column_in_use"),
+    label: t("BooksPage_column_in_use"),
     field: "bookInUse",
     align: "center",
     sortable: true,
   },
   {
     name: "publisher",
-    label: t("BooksPage.column_publisher"),
-    field: (row) => row.publisher?.publishersName || t("BooksPage.not_applicable"),
+    label: t("BooksPage_column_publisher"),
+    field: (row) => row.publisher?.publishersName || t("BooksPage_not_applicable"),
     align: "left",
     sortable: true,
   },
@@ -403,23 +438,16 @@ const validarFormulario = () => {
 
 async function carregarOpcoesEditoras() {
   try {
-    // Assumindo que LivrosService tem um método para buscar editoras
-    // ou que você tem um serviço de editoras importado/mockado.
-    // Para esta demonstração, estou usando um mock simples
-    // ou assumindo que o endpoint de LivrosService.carregarEditorasMap() retorna
-    // um array de objetos com a propriedade 'publishersName'.
-    
-    // Se LivrosService.carregarEditorasMap() retornar DTOs de editoras:
-    const EditorasService = (await import("src/services/editorasService")).default;
-    const editoras = await EditorasService.buscarTodas(); 
+    // Chama o método do serviço de livros que carrega e popula o mapa de editoras
+    const editoras = await LivrosService.carregarEditorasMap();
     opcoesEditoras.value = editoras.map((e) => e.publishersName); 
 
   } catch (error) {
     console.error("Falha ao carregar editoras:", error);
     $q.notify({
       type: "negative",
-      message: t("BooksPage.error_load_publishers") || "Erro ao carregar editoras",
-      caption: t("BooksPage.error_connection"),
+      message: t("BooksPage_error_load_publishers") || "Erro ao carregar editoras",
+      caption: t("BooksPage_error_connection"),
     });
   }
 }
@@ -433,8 +461,8 @@ async function carregarTudo() {
     console.error("Falha geral ao carregar dados:", error);
     $q.notify({
       type: "negative",
-      message: error.message || t("BooksPage.error_load_default"),
-      caption: error.response?.data?.message || t("BooksPage.error_connection"),
+      message: error.message || t("BooksPage_error_load_default"),
+      caption: error.response?.data?.message || t("BooksPage_error_connection"),
     });
     livros.value = [];
   } finally {
@@ -464,7 +492,7 @@ function abrirModalCadastro() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_register"),
+      message: t("general_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -479,7 +507,7 @@ function abrirModalEdicao(livro) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_update"),
+      message: t("general_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -507,7 +535,7 @@ async function salvarLivro() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_save"),
+      message: t("general_error_permission_save"),
       timeout: 3000
     });
     return;
@@ -532,7 +560,7 @@ async function salvarLivro() {
     if (!isFormValid) {
       $q.notify({
         type: "warning",
-        message: t("BooksPage.validation_fill_all"),
+        message: t("BooksPage_validation_fill_all"),
       });
       return;
     }
@@ -553,16 +581,16 @@ async function salvarLivro() {
   try {
     if (editando.value) {
       await LivrosService.atualizar(livroForm.value.id, livroForm.value);
-      $q.notify({ type: "positive", message: t("BooksPage.success_update") });
+      $q.notify({ type: "positive", message: t("BooksPage_success_update") });
     } else {
       await LivrosService.cadastrar(livroForm.value);
-      $q.notify({ type: "positive", message: t("BooksPage.success_register") });
+      $q.notify({ type: "positive", message: t("BooksPage_success_register") });
     }
 
     await carregarTudo();
     fecharModal();
   } catch (error) {
-    let errorMessage = t("BooksPage.error_save_default");
+    let errorMessage = t("BooksPage_error_save_default");
 
     if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
@@ -585,7 +613,7 @@ function confirmarExclusao(id) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -601,7 +629,7 @@ async function deletarLivroConfirmado() {
     modalExcluir.value = false;
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -611,14 +639,14 @@ async function deletarLivroConfirmado() {
   carregando.value = true;
   try {
     await LivrosService.deletar(livroParaDeletarId.value);
-    $q.notify({ type: "positive", message: t("BooksPage.success_delete") });
+    $q.notify({ type: "positive", message: t("BooksPage_success_delete") });
     await carregarTudo();
   } catch (error) {
-    let errorMessage = t("BooksPage.error_delete_default");
+    let errorMessage = t("BooksPage_error_delete_default");
 
     if (error.response?.status === 400) {
       // Caso o livro esteja em uso
-      errorMessage = t("BooksPage.error_delete_linked");
+      errorMessage = t("BooksPage_error_delete_linked");
     } else if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
     }
@@ -633,13 +661,14 @@ async function deletarLivroConfirmado() {
 }
 
 onMounted(() => {
+  console.log('Role atual (LivrosPage):', userRole.value);
   carregarTudo();
 });
 
 watch(locale, () => {
   $q.notify({
     type: "info",
-    message: t("general.language_updated") || "Idioma atualizado",
+    message: t("general_language_updated") || "Idioma atualizado",
     timeout: 1000,
   });
 });

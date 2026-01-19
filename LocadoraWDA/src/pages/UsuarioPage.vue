@@ -14,21 +14,21 @@
               color="primary"
             />
             <span class="text-white text-weight-bold ellipsis">{{
-              $t("UsersPage.title")
+              $t("UsersPage_title")
             }}</span>
           </div>
         </div>
 
         <div
+          v-if="userRole === 'ADMIN'"
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
             class="CadastroBTN full-width"
-            :label="$t('UsersPage.register_button')"
+            :label="$t('UsersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
-            :disable="userRole === 'USER'"
           />
         </div>
 
@@ -37,7 +37,7 @@
             class="pesquisaALL"
             standout
             v-model="pesquisa"
-            :label="$t('UsersPage.search_placeholder')"
+            :label="$t('UsersPage_search_placeholder')"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -65,7 +65,7 @@
           <q-th v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.label }}
           </q-th>
-          <q-th>{{ $t("UsersPage.actions_header") }}</q-th>
+          <q-th v-if="userRole === 'ADMIN'">{{ $t("UsersPage_actions_header") }}</q-th>
         </q-tr>
       </template>
 
@@ -79,24 +79,23 @@
               {{ col.value }}
             </span>
           </q-td>
-          <q-td>
+          <q-td v-if="userRole === 'ADMIN'">
             <q-btn
               dense
               flat
               icon="edit"
               color="primary"
-              :tooltip="$t('UsersPage.tooltip_edit')"
+              :tooltip="$t('UsersPage_tooltip_edit')"
               @click="editarUsuario(props.row)"
-              :disable="userRole === 'USER'"
             />
             <q-btn
+              v-if="props.row.userEmail !== currentUserEmail"
               dense
               flat
               icon="delete"
               color="negative"
-              :tooltip="$t('UsersPage.tooltip_delete')"
+              :tooltip="$t('UsersPage_tooltip_delete')"
               @click="confirmarExcluir(props.row)"
-              :disable="userRole === 'USER'"
             />
           </q-td>
         </q-tr>
@@ -127,24 +126,23 @@
 
             <q-separator />
 
-            <q-card-actions align="right">
+            <q-card-actions align="right" v-if="userRole === 'ADMIN'">
               <q-btn
                 dense
                 flat
                 icon="edit"
                 color="primary"
-                :tooltip="$t('UsersPage.tooltip_edit')"
+                :tooltip="$t('UsersPage_tooltip_edit')"
                 @click="editarUsuario(props.row)"
-                :disable="userRole === 'USER'"
               />
               <q-btn
+                v-if="props.row.userEmail !== currentUserEmail"
                 dense
                 flat
                 icon="delete"
                 color="negative"
-                :tooltip="$t('UsersPage.tooltip_delete')"
+                :tooltip="$t('UsersPage_tooltip_delete')"
                 @click="confirmarExcluir(props.row)"
-                :disable="userRole === 'USER'"
               />
             </q-card-actions>
           </q-card>
@@ -154,7 +152,7 @@
         <q-inner-loading
           showing
           color="primary"
-          :label="$t('UsersPage.loading_users')"
+          :label="$t('UsersPage_loading_users')"
         />
       </template>
     </q-table>
@@ -163,20 +161,20 @@
         <q-form @submit.prevent="cadastrarUsuario">
           <q-card-section class="conteudoModal">
             <div class="tituloModal">
-              {{ $t("UsersPage.modal_register_title") }}
+              {{ $t("UsersPage_modal_register_title") }}
             </div>
             <q-input
               class="inputModal"
               outlined
               v-model="novoUsuario.nome"
-              :label="$t('UsersPage.input_name_label')"
+              :label="$t('UsersPage_input_name_label')"
               required
             />
             <q-input
               class="inputModal"
               outlined
               v-model="novoUsuario.email"
-              :label="$t('UsersPage.input_email_label')"
+              :label="$t('UsersPage_input_email_label')"
               type="email"
               required
             />
@@ -184,7 +182,7 @@
               class="inputModal"
               outlined
               v-model="novoUsuario.senha"
-              :label="$t('UsersPage.input_password_label')"
+              :label="$t('UsersPage_input_password_label')"
               type="password"
               required
             />
@@ -197,20 +195,20 @@
               option-label="label"
               emit-value
               map-options
-              :label="$t('UsersPage.input_role_label')"
+              :label="$t('UsersPage_input_role_label')"
               required
             />
           </q-card-section>
           <q-card-actions class="botoesModal">
             <q-btn
               class="modalBTN"
-              :label="$t('UsersPage.register_button')"
+              :label="$t('UsersPage_register_button')"
               color="primary"
               type="submit"
             />
             <q-btn
               class="modalBTN"
-              :label="$t('UsersPage.cancel_button')"
+              :label="$t('UsersPage_cancel_button')"
               @click="modalCadastro = false"
             />
           </q-card-actions>
@@ -223,20 +221,20 @@
         <q-form @submit.prevent="atualizarUsuario">
           <q-card-section class="conteudoModal">
             <div class="tituloModal">
-              {{ $t("UsersPage.modal_update_title") }}
+              {{ $t("UsersPage_modal_update_title") }}
             </div>
             <q-input
               class="inputModal"
               outlined
               v-model="usuarioEditar.nome"
-              :label="$t('UsersPage.input_name_label')"
+              :label="$t('UsersPage_input_name_label')"
               required
             />
             <q-input
               class="inputModal"
               outlined
               v-model="usuarioEditar.email"
-              :label="$t('UsersPage.input_email_label')"
+              :label="$t('UsersPage_input_email_label')"
               type="email"
               required
             />
@@ -244,14 +242,14 @@
               class="inputModal"
               outlined
               v-model="usuarioEditar.senha"
-              :label="$t('UsersPage.input_new_password_label')"
+              :label="$t('UsersPage_input_new_password_label')"
               type="password"
             />
             <q-input
               class="inputModal"
               outlined
               v-model="usuarioEditar.confirmarSenha"
-              :label="$t('UsersPage.input_confirm_password_label')"
+              :label="$t('UsersPage_input_confirm_password_label')"
               type="password"
             />
             <q-select
@@ -263,20 +261,20 @@
               option-label="label"
               emit-value
               map-options
-              :label="$t('UsersPage.input_role_label')"
+              :label="$t('UsersPage_input_role_label')"
               required
             />
           </q-card-section>
           <q-card-actions class="botoesModal">
             <q-btn
               class="modalBTN"
-              :label="$t('UsersPage.update_button')"
+              :label="$t('UsersPage_update_button')"
               color="primary"
               type="submit"
             />
             <q-btn
               class="modalBTN"
-              :label="$t('UsersPage.close_button')"
+              :label="$t('UsersPage_close_button')"
               @click="modalEditar = false"
             />
           </q-card-actions>
@@ -288,20 +286,20 @@
       <q-card class="modalCertificando" style="">
         <q-card-section class="conteudoModal text-center">
           <div class="text-h6 lt-sm:text-body1">
-            {{ $t("UsersPage.confirm_delete_q1") }},
-            {{ $t("UsersPage.confirm_delete_q2") }}
+            {{ $t("UsersPage_confirm_delete_q1") }},
+            {{ $t("UsersPage_confirm_delete_q2") }}
           </div>
         </q-card-section>
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('UsersPage.delete_button')"
+            :label="$t('UsersPage_delete_button')"
             color="negative"
             @click="excluirUsuario"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('UsersPage.back_button')"
+            :label="$t('UsersPage_back_button')"
             @click="modalExcluir = false"
           />
         </q-card-actions>
@@ -318,12 +316,25 @@ import { usuarioService } from "src/services/usuarioService";
 
 const $q = useQuasar();
 const { t, locale } = useI18n();
+ 
+const currentUserEmail = computed(() => {
+  const userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    try {
+      return JSON.parse(userInfo).email;
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+});
 
 function getCurrentUserRole() {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
     try {
-      return JSON.parse(userInfo).role;
+      const role = JSON.parse(userInfo).role;
+      return role ? String(role).trim().toUpperCase() : null;
     } catch (e) {
       return null;
     }
@@ -334,13 +345,13 @@ function getCurrentUserRole() {
 const userRole = ref(getCurrentUserRole());
 
 const roleMap = computed(() => ({
-  USER: t("UsersPage.role_user"),
-  ADMIN: t("UsersPage.role_admin"),
+  USER: t("UsersPage_role_user"),
+  ADMIN: t("UsersPage_role_admin"),
 }));
 
 const roleOptionsComputed = computed(() => [
-  { label: t("UsersPage.role_user"), value: "USER" },
-  { label: t("UsersPage.role_admin"), value: "ADMIN" },
+  { label: t("UsersPage_role_user"), value: "USER" },
+  { label: t("UsersPage_role_admin"), value: "ADMIN" },
 ]);
 
 const allUsers = ref([]);
@@ -351,21 +362,21 @@ const pesquisa = ref("");
 const columns = computed(() => [
   {
     name: "name",
-    label: t("UsersPage.column_name"),
+    label: t("UsersPage_column_name"),
     field: "userName", 
     sortable: true,
     align: "left",
   },
   {
     name: "email",
-    label: t("UsersPage.column_email"),
+    label: t("UsersPage_column_email"),
     field: "userEmail", 
     sortable: true,
     align: "left",
   },
   {
     name: "role",
-    label: t("UsersPage.column_role"),
+    label: t("UsersPage_column_role"),
     field: "role",
     sortable: true,
     align: "left",
@@ -416,8 +427,8 @@ async function fetchUsers() {
     $q.notify({
       type: "negative",
       message:
-        t("UsersPage.error_load_default") +
-        (error.response?.data?.message || t("UsersPage.error_network")),
+        t("UsersPage_error_load_default") +
+        (error.response?.data?.message || t("UsersPage_error_network")),
     });
   } finally {
     loading.value = false;
@@ -437,7 +448,7 @@ async function cadastrarUsuario() {
   const { nome, email, senha, tipo } = novoUsuario.value;
 
   if (!nome || !email || !senha) {
-    $q.notify({ type: "warning", message: t("UsersPage.validation_fill_all") });
+    $q.notify({ type: "warning", message: t("UsersPage_validation_fill_all") });
     return;
   }
 
@@ -451,16 +462,16 @@ async function cadastrarUsuario() {
 
     await usuarioService.criarUsuario(dados);
 
-    $q.notify({ type: "positive", message: t("UsersPage.success_register") });
+    $q.notify({ type: "positive", message: t("UsersPage_success_register") });
     modalCadastro.value = false;
     resetNovoUsuario();
     await fetchUsers();
   } catch (error) {
-    let errorMessage = t("UsersPage.error_register_default");
+    let errorMessage = t("UsersPage_error_register_default");
     if (error.response?.status === 403) {
-      errorMessage = t("UsersPage.error_permission_register_backend"); 
+      errorMessage = t("UsersPage_error_permission_register_backend"); 
     } else {
-      errorMessage += error.response?.data?.message || t("UsersPage.error_check_console");
+      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
     }
 
     $q.notify({
@@ -474,7 +485,7 @@ function editarUsuario(user) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("UsersPage.error_permission_update"),
+      message: t("UsersPage_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -495,7 +506,7 @@ async function atualizarUsuario() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("UsersPage.error_permission_update"),
+      message: t("UsersPage_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -506,14 +517,14 @@ async function atualizarUsuario() {
   if (senha && senha !== confirmarSenha) {
     $q.notify({
       type: "warning",
-      message: t("UsersPage.validation_password_mismatch"),
+      message: t("UsersPage_validation_password_mismatch"),
     });
     return;
   }
   if (!nome || !email) {
     $q.notify({
       type: "warning",
-      message: t("UsersPage.validation_name_email_required"),
+      message: t("UsersPage_validation_name_email_required"),
     });
     return;
   }
@@ -531,7 +542,7 @@ async function atualizarUsuario() {
 
     await usuarioService.atualizarUsuario(id, dadosAtualizados);
 
-    $q.notify({ type: "positive", message: t("UsersPage.success_update") });
+    $q.notify({ type: "positive", message: t("UsersPage_success_update") });
     modalEditar.value = false;
 
     const index = allUsers.value.findIndex((u) => u.id === id);
@@ -542,11 +553,11 @@ async function atualizarUsuario() {
       allUsers.value = [...allUsers.value];
     }
   } catch (error) {
-    let errorMessage = t("UsersPage.error_update_default");
+    let errorMessage = t("UsersPage_error_update_default");
     if (error.response?.status === 403) {
-      errorMessage = t("UsersPage.error_permission_update_backend"); 
+      errorMessage = t("UsersPage_error_permission_update_backend"); 
     } else {
-      errorMessage += error.response?.data?.message || t("UsersPage.error_check_console");
+      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
     }
 
     $q.notify({
@@ -560,7 +571,7 @@ function confirmarExcluir(user) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("UsersPage.error_permission_delete"),
+      message: t("UsersPage_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -575,7 +586,7 @@ async function excluirUsuario() {
     modalExcluir.value = false;
     $q.notify({
       type: "negative",
-      message: t("UsersPage.error_permission_delete"), 
+      message: t("UsersPage_error_permission_delete"), 
       timeout: 3000
     });
     return;
@@ -586,17 +597,17 @@ async function excluirUsuario() {
   try {
     await usuarioService.deletarUsuario(user.id);
 
-    $q.notify({ type: "positive", message: t("UsersPage.success_delete") });
+    $q.notify({ type: "positive", message: t("UsersPage_success_delete") });
     modalExcluir.value = false;
     usuarioParaExcluir.value = null;
 
     allUsers.value = allUsers.value.filter((u) => u.id !== user.id);
   } catch (error) {
-    let errorMessage = t("UsersPage.error_delete_default");
+    let errorMessage = t("UsersPage_error_delete_default");
     if (error.response?.status === 403) {
-      errorMessage = t("UsersPage.error_permission_delete_backend"); 
+      errorMessage = t("UsersPage_error_permission_delete_backend"); 
     } else {
-      errorMessage += error.response?.data?.message || t("UsersPage.error_check_console");
+      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
     }
 
     $q.notify({
@@ -610,7 +621,7 @@ function abrirModalCadastro() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("UsersPage.error_permission_register"),
+      message: t("UsersPage_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -629,6 +640,7 @@ function resetNovoUsuario() {
 }
 
 onMounted(() => {
+  console.log('Role atual (UsuarioPage):', userRole.value);
   fetchUsers();
 });
 
@@ -636,7 +648,7 @@ watch(locale, () => {
   fetchUsers();
   $q.notify({
     type: "info",
-    message: t("general.language_updated"),
+    message: t("general_language_updated"),
     timeout: 1000,
   });
 });

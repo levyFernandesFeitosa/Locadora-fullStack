@@ -12,8 +12,14 @@ export default route(function () {
   Router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('authToken')
 
-    // Se não tem token e não está indo pro login → redireciona
-    if (!token && to.path !== '/' && to.path !== '/login') {
+    // Lista de rotas públicas (que não exigem token)
+    const publicRouteNames = ['login', 'forgot-password']
+    const publicRoutePaths = ['/', '/forgot-password']
+
+    const isPublic = publicRouteNames.includes(to.name) || publicRoutePaths.includes(to.path)
+
+    // Se não tem token e a rota destino não é pública -> redireciona para login
+    if (!token && !isPublic) {
       next('/')
     } else {
       next()

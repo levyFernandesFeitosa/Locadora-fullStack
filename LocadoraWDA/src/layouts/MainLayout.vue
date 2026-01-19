@@ -9,13 +9,13 @@
             round
             flat
             icon="menu"
-            :aria-label="$t('MainLayout.menu_aria_label')"
+            :aria-label="$t('MainLayout_menu_aria_label')"
             @click="toggleLeftDrawer"
           />
         </div>
         <div class="header-center">
           <q-toolbar-title>
-            <span class="app-title">{{ $t('MainLayout.app_title') }}</span>
+            <span class="app-title">{{ $t('MainLayout_app_title') }}</span>
           </q-toolbar-title>
         </div>
 
@@ -23,21 +23,21 @@
           <q-btn-dropdown
             class="MenuBTN"
             color="purple"
-            :label="$q.screen.xs ? $t('MainLayout.user_short_label') : $t('MainLayout.user_full_label')"
+            :label="$q.screen.xs ? $t('MainLayout_user_short_label') : $t('MainLayout_user_full_label')"
             content-class="menu-transparente"
           >
             <div class="modalMenu q-pa-md">
               <div class="colomn q-pr-lg menu-container-small"> 
                 
-                <div class="text-h5 q-mb-md">{{ $t('MainLayout.user_info_title') }}</div>
+                <div class="text-h5 q-mb-md">{{ $t('MainLayout_user_info_title') }}</div>
                 <div class="info">
-                  👤 {{ $t('MainLayout.user_name_label') }}: <span>{{ userInfo.name }}</span>
+                  👤 {{ $t('MainLayout_user_name_label') }}: <span>{{ userInfo.name }}</span>
                 </div>
                 <div class="info">
-                  📧 {{ $t('MainLayout.user_email_label') }}: <span>{{ userInfo.email }}</span>
+                  📧 {{ $t('MainLayout_user_email_label') }}: <span>{{ userInfo.email }}</span>
                 </div>
                 <div class="info q-mb-sm">
-                  🔑 {{ $t('MainLayout.user_permission_label') }}: <span>{{ roleMap[userInfo.role] || userInfo.role }}</span>
+                  🔑 {{ $t('MainLayout_user_permission_label') }}: <span>{{ roleMap[userInfo.role] || userInfo.role }}</span>
                 </div>
 
                 <q-separator class="q-my-sm" /> 
@@ -63,7 +63,7 @@
                   class="MenuBTN"
                   id="MenuBTN"
                   color="primary"
-                  :label="$t('MainLayout.logout_button')"
+                  :label="$t('MainLayout_logout_button')"
                   @click="handleLogout"
                 />
               </div>
@@ -112,7 +112,7 @@
           <q-icon name="logout" />
         </q-item-section>
         <q-item-section>
-          <q-item-label>{{ $t('MainLayout.logout_button') }}</q-item-label>
+          <q-item-label>{{ $t('MainLayout_logout_button') }}</q-item-label>
         </q-item-section>
       </q-item>
     </q-drawer>
@@ -154,9 +154,9 @@ const userInfo = ref({
 
 const roleMap = computed(() => ({
     // As chaves precisam ser MAIÚSCULAS
-    USER: t('UsersPage.role_user'), 
-    ADMIN: t('UsersPage.role_admin'), 
-    GUEST: t('general.guest_user') || 'Visitante', // Fallback
+    USER: t('UsersPage_role_user'), 
+    ADMIN: t('UsersPage_role_admin'), 
+    GUEST: t('general_guest_user') || 'Visitante', // Fallback
 }));
 
 /**
@@ -171,10 +171,10 @@ function loadUserInfo() {
             userInfo.value.name = user.name || 'Nome Indisponível';
             userInfo.value.email = user.email || 'Email Indisponível';
             
-            // 🎯 CORREÇÃO FINAL: Garante que é uma string, converte para maiúsculas
+            // 🎯 CORREÇÃO DEFINITIVA: Tratamento robusto de string
             const userRole = user.role;
-            if (typeof userRole === 'string') {
-                userInfo.value.role = userRole.toUpperCase();
+            if (userRole) {
+                userInfo.value.role = String(userRole).trim().toUpperCase();
             } else {
                 userInfo.value.role = 'GUEST'; 
             }
@@ -221,19 +221,19 @@ function setLanguage(newLang) {
     localStorage.setItem('user-language', newLang); 
     $q.notify({
         type: 'info',
-        message: t('general.language_updated'),
+        message: t('general_language_updated'),
         timeout: 1000
     });
 }
 
 // --- Links do Menu Lateral e Lógica ---
 const baseLinksList = [
-    { titleKey: "MainLayout.link_dashboard", link: "/dashboard", icon: "dashboard" },
-    { titleKey: "MainLayout.link_renters", link: "/locatario", icon: "people" },
-    { titleKey: "MainLayout.link_publishers", link: "/editoras", icon: "library_books" },
-    { titleKey: "MainLayout.link_books", link: "/livros", icon: "menu_book" },
-    { titleKey: "MainLayout.link_rentals", link: "/alugueis", icon: "event" },
-    { titleKey: "MainLayout.link_users", link: "/usuario", icon: "manage_accounts" },
+    { titleKey: "MainLayout_link_dashboard", link: "/app/dashboard", icon: "dashboard" },
+    { titleKey: "MainLayout_link_renters", link: "/app/locatario", icon: "people" },
+    { titleKey: "MainLayout_link_publishers", link: "/app/editoras", icon: "library_books" },
+    { titleKey: "MainLayout_link_books", link: "/app/livros", icon: "menu_book" },
+    { titleKey: "MainLayout_link_rentals", link: "/app/alugueis", icon: "event" },
+    { titleKey: "MainLayout_link_users", link: "/app/usuario", icon: "manage_accounts" },
 ];
 
 const translatedLinksList = computed(() => {
@@ -265,7 +265,7 @@ async function handleLogout() {
   // 2. Notificar o usuário
   $q.notify({
       type: 'info',
-      message: t('MainLayout.logout_success_message') || 'Sessão encerrada com sucesso!',
+      message: t('MainLayout_logout_success_message') || 'Sessão encerrada com sucesso!',
       timeout: 2000,
       position: 'top'
   });

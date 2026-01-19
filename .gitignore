@@ -1,0 +1,28 @@
+# Build and dependency directories
+target/
+node_modules/
+dist/
+.gradle/
+.mvn/
+build/
+
+# IDE and System files
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+*.log
+
+# OneDrive and OS specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.sync
+.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local

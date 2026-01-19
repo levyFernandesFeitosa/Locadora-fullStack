@@ -157,3 +157,21 @@ img {
       right: 10px;
     }
 }
+
+// Inversão de cores para ForgotPasswordPage
+.forgot-password-layout {
+    background-color: #274e55 !important;
+    
+    .containerLeft {
+        background-color: #edead0 !important;
+        color: #000000 !important;
+        
+        .text1, .text2 {
+            color: #000000 !important;
+        }
+    }
+
+    .containerRight {
+        background-color: white !important;
+    }
+}

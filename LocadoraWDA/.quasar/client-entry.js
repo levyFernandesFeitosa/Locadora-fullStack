@@ -156,9 +156,7 @@ createQuasarApp(createApp, quasarUserOptions)
       
       import('boot/i18n'),
       
-      import('boot/axios'),
-      
-      import('boot/quasar-lang')
+      import('boot/axios')
       
     ]).then(bootFiles => {
       const boot = mapFn(bootFiles).filter(entry => typeof entry === 'function')

@@ -14,21 +14,21 @@
               color="primary"
             />
             <span class="text-white text-weight-bold ellipsis">{{
-              $t("PublishersPage.title")
+              $t("PublishersPage_title")
             }}</span>
           </div>
         </div>
 
         <div
+          v-if="userRole === 'ADMIN'"
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
             class="CadastroBTN full-width"
-            :label="$t('PublishersPage.register_button')"
+            :label="$t('PublishersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
-            :disable="userRole === 'USER'"
           />
         </div>
 
@@ -37,7 +37,7 @@
             class="pesquisaALL"
             standout
             v-model="pesquisa"
-            :label="$t('PublishersPage.search_placeholder')"
+            :label="$t('PublishersPage_search_placeholder')"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -67,7 +67,7 @@
           <q-th v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.label }}
           </q-th>
-          <q-th>{{ $t("PublishersPage.actions_header") }}</q-th>
+          <q-th v-if="userRole === 'ADMIN'">{{ $t("PublishersPage_actions_header") }}</q-th>
         </q-tr>
       </template>
 
@@ -76,14 +76,13 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.value }}
           </q-td>
-          <q-td>
+          <q-td v-if="userRole === 'ADMIN'">
             <q-btn
               dense
               flat
               icon="edit"
               color="primary"
               @click="editarEditora(props.row)"
-              :disable="userRole === 'USER'"
             />
             <q-btn
               dense
@@ -91,7 +90,6 @@
               icon="delete"
               color="negative"
               @click="confirmarExcluir(props.row)"
-              :disable="userRole === 'USER'"
             />
           </q-td>
         </q-tr>
@@ -117,14 +115,13 @@
 
             <q-separator />
 
-            <q-card-actions align="right">
+            <q-card-actions align="right" v-if="userRole === 'ADMIN'">
               <q-btn
                 dense
                 flat
                 icon="edit"
                 color="primary"
                 @click="editarEditora(props.row)"
-                :disable="userRole === 'USER'"
               />
               <q-btn
                 dense
@@ -132,7 +129,6 @@
                 icon="delete"
                 color="negative"
                 @click="confirmarExcluir(props.row)"
-                :disable="userRole === 'USER'"
               />
             </q-card-actions>
           </q-card>
@@ -143,14 +139,14 @@
       <q-card class="modal" style="max-height: 80%; width: 100%">
         <q-card-section class="conteudoModal">
           <div class="tituloModal">
-            {{ $t("PublishersPage.modal_register_title") }}
+            {{ $t("PublishersPage_modal_register_title") }}
           </div>
 
           <q-input
             class="inputModal"
             outlined
             v-model="novaEditora.nome"
-            :label="$t('PublishersPage.input_name_label')"
+            :label="$t('PublishersPage_input_name_label')"
             :error="errosCadastro.nome"
             error-color="negative"
             @input="validarCampo('nome')"
@@ -160,7 +156,7 @@
             class="inputModal"
             outlined
             v-model="novaEditora.email"
-            :label="$t('PublishersPage.input_email_label')"
+            :label="$t('PublishersPage_input_email_label')"
             type="email"
             :error="errosCadastro.email"
             error-color="negative"
@@ -171,7 +167,7 @@
             class="inputModal"
             outlined
             v-model="novaEditora.telefone"
-            :label="$t('PublishersPage.input_phone_label')"
+            :label="$t('PublishersPage_input_phone_label')"
             :error="errosCadastro.telefone"
             error-color="negative"
             @input="validarCampo('telefone')"
@@ -181,7 +177,7 @@
             class="inputModal"
             outlined
             v-model="novaEditora.site"
-            :label="$t('PublishersPage.input_website_label')"
+            :label="$t('PublishersPage_input_website_label')"
             :error="errosCadastro.site"
             error-color="negative"
             @input="validarCampo('site')"
@@ -191,13 +187,13 @@
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.register_button')"
+            :label="$t('PublishersPage_register_button')"
             color="primary"
             @click="cadastrarEditora"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.cancel_button')"
+            :label="$t('PublishersPage_cancel_button')"
             @click="modalCadastro = false"
           />
         </q-card-actions>
@@ -208,16 +204,16 @@
       <q-card class="modal" style="max-height: 80%; width: 100%">
         <q-card-section class="conteudoModal">
           <div class="tituloModal">
-            {{ $t("PublishersPage.modal_update_title") }}
+            {{ $t("PublishersPage_modal_update_title") }}
           </div>
 
           <q-input
             class="inputModal"
             v-model="editoraEditar.nome"
-            :label="$t('PublishersPage.input_name_label')"
+            :label="$t('PublishersPage_input_name_label')"
             :error="errosEdicao.nome"
             :error-message="
-              errosEdicao.nome ? $t('PublishersPage.validation_required') : ''
+              errosEdicao.nome ? $t('PublishersPage_validation_required') : ''
             "
             @input="validarCampo('nome', 'edicao')"
             required
@@ -225,11 +221,11 @@
           <q-input
             class="inputModal"
             v-model="editoraEditar.email"
-            :label="$t('PublishersPage.input_email_label')"
+            :label="$t('PublishersPage_input_email_label')"
             type="email"
             :error="errosEdicao.email"
             :error-message="
-              errosEdicao.email ? $t('PublishersPage.validation_required') : ''
+              errosEdicao.email ? $t('PublishersPage_validation_required') : ''
             "
             @input="validarCampo('email', 'edicao')"
             required
@@ -237,11 +233,11 @@
           <q-input
             class="inputModal"
             v-model="editoraEditar.telefone"
-            :label="$t('PublishersPage.input_phone_label')"
+            :label="$t('PublishersPage_input_phone_label')"
             :error="errosEdicao.telefone"
             :error-message="
               errosEdicao.telefone
-                ? $t('PublishersPage.validation_required')
+                ? $t('PublishersPage_validation_required')
                 : ''
             "
             @input="validarCampo('telefone', 'edicao')"
@@ -250,10 +246,10 @@
           <q-input
             class="inputModal"
             v-model="editoraEditar.site"
-            :label="$t('PublishersPage.input_website_label')"
+            :label="$t('PublishersPage_input_website_label')"
             :error="errosEdicao.site"
             :error-message="
-              errosEdicao.site ? $t('PublishersPage.validation_required') : ''
+              errosEdicao.site ? $t('PublishersPage_validation_required') : ''
             "
             @input="validarCampo('site', 'edicao')"
             required
@@ -262,13 +258,13 @@
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.update_button')"
+            :label="$t('PublishersPage_update_button')"
             color="primary"
             @click="atualizarEditora"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.close_button')"
+            :label="$t('PublishersPage_close_button')"
             @click="modalEditar = false"
           />
         </q-card-actions>
@@ -279,20 +275,20 @@
       <q-card class="modalCertificando" style="">
         <q-card-section class="conteudoModal text-center">
           <div class="text-h6 lt-sm:text-body1">
-            {{ $t("PublishersPage.confirm_delete_q1") }},
-            {{ $t("PublishersPage.confirm_delete_q2") }}
+            {{ $t("PublishersPage_confirm_delete_q1") }},
+            {{ $t("PublishersPage_confirm_delete_q2") }}
           </div>
         </q-card-section>
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.delete_button')"
+            :label="$t('PublishersPage_delete_button')"
             color="negative"
             @click="excluirEditora"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('PublishersPage.back_button')"
+            :label="$t('PublishersPage_back_button')"
             @click="modalExcluir = false"
           />
         </q-card-actions>
@@ -311,7 +307,8 @@ function getCurrentUserRole() {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
     try {
-      return JSON.parse(userInfo).role;
+      const role = JSON.parse(userInfo).role;
+      return role ? String(role).trim().toUpperCase() : null;
     } catch (e) {
       return null;
     }
@@ -359,28 +356,28 @@ const errosEdicao = ref({
 const columns = computed(() => [
   {
     name: "name",
-    label: t("PublishersPage.column_name"),
+    label: t("PublishersPage_column_name"),
     field: "publishersName",
     align: "left",
     sortable: true,
   },
   {
     name: "email",
-    label: t("PublishersPage.column_email"),
+    label: t("PublishersPage_column_email"),
     field: "publishersEmail",
     align: "left",
     sortable: true,
   },
   {
     name: "telephone",
-    label: t("PublishersPage.column_phone"),
+    label: t("PublishersPage_column_phone"),
     field: "publishersTelephone",
     align: "left",
     sortable: true,
   },
   {
     name: "site",
-    label: t("PublishersPage.column_website"),
+    label: t("PublishersPage_column_website"),
     field: "publishersSite",
     align: "left",
     sortable: true,
@@ -455,9 +452,9 @@ async function carregarEditoras() {
     console.error("Falha ao carregar editoras:", error);
     $q.notify({
       type: "negative",
-      message: t("PublishersPage.error_load_default"),
+      message: t("PublishersPage_error_load_default"),
       caption:
-        error.response?.data?.message || t("PublishersPage.error_connection"),
+        error.response?.data?.message || t("PublishersPage_error_connection"),
     });
   } finally {
     isLoading.value = false;
@@ -468,7 +465,7 @@ function abrirModalCadastro() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_register"),
+      message: t("general_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -488,7 +485,7 @@ async function cadastrarEditora() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_register"),
+      message: t("general_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -497,7 +494,7 @@ async function cadastrarEditora() {
   if (!validarFormularioCadastro()) {
     $q.notify({
       type: "negative",
-      message: t("PublishersPage.validation_fill_all"),
+      message: t("PublishersPage_validation_fill_all"),
     });
     return;
   }
@@ -514,7 +511,7 @@ async function cadastrarEditora() {
 
     $q.notify({
       type: "positive",
-      message: t("PublishersPage.success_register"),
+      message: t("PublishersPage_success_register"),
     });
     modalCadastro.value = false;
     carregarEditoras();
@@ -524,7 +521,7 @@ async function cadastrarEditora() {
       type: "negative",
       message:
         error.response?.data?.message ||
-        t("PublishersPage.error_register_default"),
+        t("PublishersPage_error_register_default"),
     });
   }
 }
@@ -533,7 +530,7 @@ function editarEditora(editora) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_update"),
+      message: t("general_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -559,7 +556,7 @@ async function atualizarEditora() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_update"),
+      message: t("general_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -568,7 +565,7 @@ async function atualizarEditora() {
   if (!validarFormularioEdicao()) {
     $q.notify({
       type: "negative",
-      message: t("PublishersPage.validation_fill_all"),
+      message: t("PublishersPage_validation_fill_all"),
     });
     return;
   }
@@ -585,7 +582,7 @@ async function atualizarEditora() {
 
     $q.notify({
       type: "positive",
-      message: t("PublishersPage.success_update"),
+      message: t("PublishersPage_success_update"),
     });
     modalEditar.value = false;
     carregarEditoras();
@@ -595,7 +592,7 @@ async function atualizarEditora() {
       type: "negative",
       message:
         error.response?.data?.message ||
-        t("PublishersPage.error_update_default"),
+        t("PublishersPage_error_update_default"),
     });
   }
 }
@@ -604,7 +601,7 @@ function confirmarExcluir(editora) {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -617,7 +614,7 @@ async function excluirEditora() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -628,16 +625,16 @@ async function excluirEditora() {
 
     $q.notify({
       type: "positive",
-      message: t("PublishersPage.success_delete"),
+      message: t("PublishersPage_success_delete"),
     });
     modalExcluir.value = false;
     carregarEditoras();
   } catch (error) {
     console.error("Erro na exclusão:", error);
-    let errorMessage = t("PublishersPage.error_delete_default");
+    let errorMessage = t("PublishersPage_error_delete_default");
 
     if (error.response?.status === 400) {
-      errorMessage = t("PublishersPage.error_delete_linked");
+      errorMessage = t("PublishersPage_error_delete_linked");
     } else if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
     }
@@ -651,13 +648,14 @@ async function excluirEditora() {
 }
 
 onMounted(() => {
+  console.log('Role atual (EditorasPage):', userRole.value);
   carregarEditoras();
 });
 
 watch(locale, () => {
   $q.notify({
     type: "info",
-    message: t("general.language_updated") || "Idioma atualizado",
+    message: t("general_language_updated") || "Idioma atualizado",
     timeout: 1000,
   });
 });

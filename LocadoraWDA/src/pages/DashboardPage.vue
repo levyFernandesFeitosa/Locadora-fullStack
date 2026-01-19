@@ -4,14 +4,14 @@
       <div class="dashboard-grid">
         <q-card class="card">
           <q-card-section>
-            <div class="text-h6 q-mb-md">{{ $t('DashboardPage.Rental_Distribution') }}</div>
+            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Rental_Distribution') }}</div>
             <canvas id="graficoDistribuicaoAlugueis"></canvas>
           </q-card-section>
         </q-card>
 
         <q-card class="card">
           <q-card-section>
-            <div class="text-h6 q-mb-md">{{ $t('DashboardPage.Most_Rented_Books') }}</div>
+            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Most_Rented_Books') }}</div>
             <canvas id="graficoLivrosMaisAlugados"></canvas>
           </q-card-section>
         </q-card>
@@ -19,13 +19,13 @@
         <div class="cards-coluna">
           <q-card class="card-total">
             <q-card-section>
-              <div class="text-h6">{{ $t('DashboardPage.Total_Rentals') }}</div>
+              <div class="text-h6">{{ $t('DashboardPage_Total_Rentals') }}</div>
               <span class="text-h5">{{ totalAlugueis }}</span>
             </q-card-section>
           </q-card>
           <q-card class="card-total">
             <q-card-section>
-              <div class="text-h6">{{ $t('DashboardPage.Total_Renters') }}</div>
+              <div class="text-h6">{{ $t('DashboardPage_Total_Renters') }}</div>
               <span class="text-h5">{{ totalLocatarios }}</span>
             </q-card-section>
           </q-card>
@@ -141,7 +141,7 @@ const totalLocatarios = computed(() => Array.isArray(locatarios.value) ? locatar
 const columns = computed(() => [
   { 
     name: 'nome', 
-    label: t('DashboardPage.Renter'), 
+    label: t('DashboardPage_Renter'), 
     field: 'nome', 
     align: 'left', 
     sortable: true,
@@ -150,14 +150,14 @@ const columns = computed(() => [
   },
   { 
     name: 'totalAlugueis', 
-    label: t('DashboardPage.Total_Loans'), 
+    label: t('DashboardPage_Total_Loans'), 
     field: 'totalAlugueis', 
     align: 'center', 
     sortable: true 
   },
   { 
     name: 'livrosDevolvidos', 
-    label: t('DashboardPage.Rentals_Returned'), 
+    label: t('DashboardPage_Rentals_Returned'), 
     field: 'livrosDevolvidos', 
     align: 'center', 
     sortable: true 
@@ -202,7 +202,7 @@ function renderCharts() {
       data: {
         labels: livrosLabels,
         datasets: [{
-          label: t('DashboardPage.Most_Rented_Books'), 
+          label: t('DashboardPage_Most_Rented_Books'), 
           data: livrosData,
           backgroundColor: 'rgba(75, 192, 192, 1)',
           borderColor: 'rgba(75, 192, 192, 1)',
@@ -234,12 +234,12 @@ function renderCharts() {
       type: 'pie',
       data: {
         labels: [
-          t('DashboardPage.Returned'),
-          t('DashboardPage.Pending'), 
-          t('DashboardPage.Late')
+          t('DashboardPage_Returned'),
+          t('DashboardPage_Pending'), 
+          t('DashboardPage_Late')
         ],
         datasets: [{
-          label: t('DashboardPage.Rental_Distribution'), 
+          label: t('DashboardPage_Rental_Distribution'), 
           data: [
             entreguesNoPrazo.value,
             entreguesAtraso.value,
@@ -294,7 +294,7 @@ async function loadData() {
     console.error('Erro no loadData:', error);
     $q.notify({
       type: 'negative',
-      message: t('general.data_load_error') || 'Erro ao carregar dados', 
+      message: t('general_data_load_error') || 'Erro ao carregar dados', 
       caption: error.response?.data?.message || 'Verifique sua conexão ou a API.',
     });
   } finally {

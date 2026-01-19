@@ -9,21 +9,21 @@
           <div class="titulo flex items-center">
             <q-icon name="people" size="32px" class="q-mr-sm" color="primary" />
             <span class=" text-white text-weight-bold ellipsis">{{
-              $t("RentersPage.title")
+              $t("RentersPage_title")
             }}</span>
           </div>
         </div>
 
         <div
+          v-if="userRole === 'ADMIN'"
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
             class="CadastroBTN full-width"
-            :label="$t('RentersPage.register_button')"
+            :label="$t('RentersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
-            :disable="userRole === 'USER'"
           />
         </div>
 
@@ -32,7 +32,7 @@
             class="pesquisaALL"
             standout
             v-model="pesquisa"
-            :label="$t('RentersPage.search_placeholder')"
+            :label="$t('RentersPage_search_placeholder')"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -62,7 +62,7 @@
           <q-th v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.label }}
           </q-th>
-          <q-th>{{ $t("RentersPage.actions_header") }}</q-th>
+          <q-th v-if="userRole === 'ADMIN'">{{ $t("RentersPage_actions_header") }}</q-th>
         </q-tr>
       </template>
 
@@ -71,14 +71,13 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             {{ col.value }}
           </q-td>
-          <q-td>
+          <q-td v-if="userRole === 'ADMIN'">
             <q-btn
               dense
               flat
               icon="edit"
               color="primary"
               @click="editarLocatario(props.row)"
-              :disable="userRole === 'USER'"
             />
             <q-btn
               dense
@@ -86,7 +85,6 @@
               icon="delete"
               color="negative"
               @click="confirmarExcluir(props.row)"
-              :disable="userRole === 'USER'"
             />
           </q-td>
         </q-tr>
@@ -112,14 +110,13 @@
 
             <q-separator />
 
-            <q-card-actions align="right">
+            <q-card-actions align="right" v-if="userRole === 'ADMIN'">
               <q-btn
                 dense
                 flat
                 icon="edit"
                 color="positive"
                 @click="editarLocatario(props.row)"
-                :disable="userRole === 'USER'"
               />
               <q-btn
                 dense
@@ -127,7 +124,6 @@
                 icon="delete"
                 color="negative"
                 @click="confirmarExcluir(props.row)"
-                :disable="userRole === 'USER'"
               />
             </q-card-actions>
           </q-card>
@@ -137,7 +133,7 @@
         <q-inner-loading
           showing
           color="primary"
-          :label="$t('RentersPage.loading_renters')"
+          :label="$t('RentersPage_loading_renters')"
         />
       </template>
     </q-table>
@@ -145,14 +141,14 @@
     <q-dialog v-model="modalCadastro">
       <q-card class="modal" id="modalGrande">
         <div class="tituloModal">
-          {{ $t("RentersPage.modal_register_title") }}
+          {{ $t("RentersPage_modal_register_title") }}
         </div>
         <q-card-section class="conteudoModal">
           <q-input
             class="inputModal"
             outlined
             v-model="novoLocatario.nome"
-            :label="$t('RentersPage.input_name_label')"
+            :label="$t('RentersPage_input_name_label')"
             :error="errosCadastro.nome"
             error-color="negative"
             @input="validarCampo('nome')"
@@ -162,7 +158,7 @@
             class="inputModal"
             outlined
             v-model="novoLocatario.email"
-            :label="$t('RentersPage.input_email_label')"
+            :label="$t('RentersPage_input_email_label')"
             type="email"
             :error="errosCadastro.email"
             error-color="negative"
@@ -173,7 +169,7 @@
             class="inputModal"
             outlined
             v-model="novoLocatario.telefone"
-            :label="$t('RentersPage.input_phone_label')"
+            :label="$t('RentersPage_input_phone_label')"
             :error="errosCadastro.telefone"
             error-color="negative"
             @input="validarCampo('telefone')"
@@ -183,7 +179,7 @@
             class="inputModal"
             outlined
             v-model="novoLocatario.cpf"
-            :label="$t('RentersPage.input_cpf_label')"
+            :label="$t('RentersPage_input_cpf_label')"
             :error="errosCadastro.cpf"
             error-color="negative"
             @input="validarCampo('cpf')"
@@ -193,7 +189,7 @@
             class="inputModal"
             outlined
             v-model="novoLocatario.endereco"
-            :label="$t('RentersPage.input_address_label')"
+            :label="$t('RentersPage_input_address_label')"
             :error="errosCadastro.endereco"
             error-color="negative"
             @input="validarCampo('endereco')"
@@ -203,14 +199,14 @@
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.register_button')"
+            :label="$t('RentersPage_register_button')"
             color="primary"
             @click="cadastrarLocatario"
             :disable="userRole === 'USER'"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.cancel_button')"
+            :label="$t('RentersPage_cancel_button')"
             @click="modalCadastro = false"
           />
         </q-card-actions>
@@ -220,21 +216,21 @@
     <q-dialog v-model="modalEditar">
       <q-card class="modal" id="modalGrande">
         <div class="tituloModal">
-          {{ $t("RentersPage.modal_update_title") }}
+          {{ $t("RentersPage_modal_update_title") }}
         </div>
         <q-card-section class="conteudoModal">
           <q-input
             class="inputModal"
             v-model="locatarioEditar.nome"
-            :label="$t('RentersPage.input_name_label')"
+            :label="$t('RentersPage_input_name_label')"
             :color="errosCadastro.nome ? 'negative' : 'primary'"
-            :error-message="$t('RentersPage.validation_required')"
+            :error-message="$t('RentersPage_validation_required')"
             required
           />
           <q-input
             class="inputModal"
             v-model="locatarioEditar.email"
-            :label="$t('RentersPage.input_email_label')"
+            :label="$t('RentersPage_input_email_label')"
             type="email"
             :error="errosCadastro.email"
             required
@@ -242,21 +238,21 @@
           <q-input
             class="inputModal"
             v-model="locatarioEditar.telefone"
-            :label="$t('RentersPage.input_phone_label')"
+            :label="$t('RentersPage_input_phone_label')"
             :error="errosCadastro.telefone"
             required
           />
           <q-input
             class="inputModal"
             v-model="locatarioEditar.cpf"
-            :label="$t('RentersPage.input_cpf_label')"
+            :label="$t('RentersPage_input_cpf_label')"
             :error="errosCadastro.cpf"
             required
           />
           <q-input
             class="inputModal"
             v-model="locatarioEditar.endereco"
-            :label="$t('RentersPage.input_address_label')"
+            :label="$t('RentersPage_input_address_label')"
             :error="errosCadastro.endereco"
             required
           />
@@ -264,14 +260,14 @@
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.update_button')"
+            :label="$t('RentersPage_update_button')"
             color="primary"
             @click="atualizarLocatario"
             :disable="userRole === 'USER'"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.close_button')"
+            :label="$t('RentersPage_close_button')"
             @click="modalEditar = false"
           />
         </q-card-actions>
@@ -282,21 +278,21 @@
       <q-card class="modalCertificando" style="">
         <q-card-section class="conteudoModal text-center">
           <div class="text-h6 lt-sm:text-body1">
-            {{ $t("RentersPage.confirm_delete_q1") }}
-            {{ $t("RentersPage.confirm_delete_q2") }}
+            {{ $t("RentersPage_confirm_delete_q1") }}
+            {{ $t("RentersPage_confirm_delete_q2") }}
           </div>
         </q-card-section>
         <q-card-actions class="botoesModal">
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.delete_button')"
+            :label="$t('RentersPage_delete_button')"
             color="negative"
             @click="excluirLocatario"
             :disable="userRole === 'USER'"
           />
           <q-btn
             class="modalBTN"
-            :label="$t('RentersPage.back_button')"
+            :label="$t('RentersPage_back_button')"
             @click="modalExcluir = false"
           />
         </q-card-actions>
@@ -319,7 +315,8 @@ function getCurrentUserRole() {
   const userInfo = localStorage.getItem('userInfo');
   if (userInfo) {
     try {
-      return JSON.parse(userInfo).role;
+      const role = JSON.parse(userInfo).role;
+      return role ? String(role).trim().toUpperCase() : null;
     } catch (e) {
       return null;
     }
@@ -359,33 +356,33 @@ const modalExcluir = ref(false);
 const columns = computed(() => [
   {
     name: "name",
-    label: t("RentersPage.column_name"),
+    label: t("RentersPage_column_name"),
     field: "renterName",
     align: "left",
     sortable: true,
   },
   {
     name: "email",
-    label: t("RentersPage.column_email"),
+    label: t("RentersPage_column_email"),
     field: "renterEmail",
     align: "left",
     sortable: true,
   },
   {
     name: "telephone",
-    label: t("RentersPage.column_phone"),
+    label: t("RentersPage_column_phone"),
     field: "renterTelephone",
     align: "left",
   },
   {
     name: "cpf",
-    label: t("RentersPage.column_cpf"),
+    label: t("RentersPage_column_cpf"),
     field: "renterCpf",
     align: "left",
   },
   {
     name: "address",
-    label: t("RentersPage.column_address"),
+    label: t("RentersPage_column_address"),
     field: "renterAddress",
     align: "left",
   },
@@ -447,7 +444,7 @@ const abrirModalCadastro = () => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_register"),
+      message: t("general_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -468,7 +465,7 @@ const editarLocatario = (locatario) => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_update"),
+      message: t("general_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -490,7 +487,7 @@ const confirmarExcluir = (locatario) => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -507,7 +504,7 @@ const fetchLocatarios = async () => {
     const data = await locatarioService.getAll();
     allLocatarios.value = data;
   } catch (error) {
-    const fallbackMsg = t("RentersPage.error_load_default") + (error.response?.data?.message || error.message || t("RentersPage.error_connection"));
+    const fallbackMsg = t("RentersPage_error_load_default") + (error.response?.data?.message || error.message || t("RentersPage_error_connection"));
     $q.notify({
       type: "negative",
       message: fallbackMsg,
@@ -522,7 +519,7 @@ const cadastrarLocatario = async () => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_register"),
+      message: t("general_error_permission_register"),
       timeout: 3000
     });
     return;
@@ -531,7 +528,7 @@ const cadastrarLocatario = async () => {
   if (!validarFormulario()) {
     $q.notify({
       type: "warning",
-      message: t("RentersPage.validation_fill_all"),
+      message: t("RentersPage_validation_fill_all"),
     });
     return;
   }
@@ -546,17 +543,17 @@ const cadastrarLocatario = async () => {
 
   try {
     await locatarioService.create(dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage.success_register") });
+    $q.notify({ type: "positive", message: t("RentersPage_success_register") });
     modalCadastro.value = false;
     fetchLocatarios();
   } catch (error) {
-    let errorMessage = t("RentersPage.error_unknown");
+    let errorMessage = t("RentersPage_error_unknown");
     if (error.response?.status === 403) {
-      errorMessage = t("RentersPage.error_permission_register_backend");
+      errorMessage = t("RentersPage_error_permission_register_backend");
     } else if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
     } else {
-      errorMessage = error.message || t("RentersPage.error_connection");
+      errorMessage = error.message || t("RentersPage_error_connection");
     }
 
     $q.notify({
@@ -571,7 +568,7 @@ const atualizarLocatario = async () => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_update"),
+      message: t("general_error_permission_update"),
       timeout: 3000
     });
     return;
@@ -595,7 +592,7 @@ const atualizarLocatario = async () => {
 
   try {
     await locatarioService.update(locatarioEditar.value.id, dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage.success_update") });
+    $q.notify({ type: "positive", message: t("RentersPage_success_update") });
     modalEditar.value = false;
 
     // Atualização local da linha da tabela
@@ -610,13 +607,13 @@ const atualizarLocatario = async () => {
     }
 
   } catch (error) {
-    let errorMessage = t("RentersPage.error_update_default");
+    let errorMessage = t("RentersPage_error_update_default");
     if (error.response?.status === 403) {
-      errorMessage = t("RentersPage.error_permission_update_backend");
+      errorMessage = t("RentersPage_error_permission_update_backend");
     } else if (error.response?.data?.message) {
       errorMessage = error.response.data.message;
     } else {
-      errorMessage = error.message || t("RentersPage.error_unexpected");
+      errorMessage = error.message || t("RentersPage_error_unexpected");
     }
 
     $q.notify({
@@ -632,7 +629,7 @@ const excluirLocatario = async () => {
     modalExcluir.value = false;
     $q.notify({
       type: "negative",
-      message: t("general.error_permission_delete"),
+      message: t("general_error_permission_delete"),
       timeout: 3000
     });
     return;
@@ -642,7 +639,7 @@ const excluirLocatario = async () => {
 
   try {
     await locatarioService.delete(locatarioParaExcluir.value.id);
-    $q.notify({ type: "positive", message: t("RentersPage.success_delete") });
+    $q.notify({ type: "positive", message: t("RentersPage_success_delete") });
     modalExcluir.value = false;
 
     // Remoção local do locatário
@@ -650,19 +647,19 @@ const excluirLocatario = async () => {
     locatarioParaExcluir.value = null;
 
   } catch (error) {
-    let errorMessage = t("RentersPage.error_delete_default");
+    let errorMessage = t("RentersPage_error_delete_default");
 
     if (error.response?.status === 403) {
-      errorMessage = t("RentersPage.error_permission_delete_backend");
+      errorMessage = t("RentersPage_error_permission_delete_backend");
     } else if (error.response?.status === 400) {
       const apiMessage = error.response.data?.message;
       if (apiMessage && typeof apiMessage === "string" && apiMessage.includes('vinculado')) {
-        errorMessage = t("RentersPage.error_delete_linked"); // Locatário com aluguel ativo
+        errorMessage = t("RentersPage_error_delete_linked"); // Locatário com aluguel ativo
       } else {
-        errorMessage = t("RentersPage.error_delete_linked");
+        errorMessage = t("RentersPage_error_delete_linked");
       }
     } else {
-      errorMessage = error.message || t("RentersPage.error_unexpected");
+      errorMessage = error.message || t("RentersPage_error_unexpected");
     }
 
     $q.notify({
@@ -686,13 +683,16 @@ const locatariosFiltrados = computed(() => {
   );
 });
 
-onMounted(fetchLocatarios);
+onMounted(() => {
+  console.log('Role atual (LocatarioPage):', userRole.value);
+  fetchLocatarios();
+});
 
 // Watcher para reatividade do idioma (mantido)
 watch(locale, () => {
   $q.notify({
     type: "info",
-    message: t("general.language_updated") || "Idioma atualizado",
+    message: t("general_language_updated") || "Idioma atualizado",
     timeout: 1000,
   });
 });

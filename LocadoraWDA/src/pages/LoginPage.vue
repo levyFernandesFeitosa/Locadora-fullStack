@@ -1,8 +1,6 @@
 <template>
   <q-page class="flex flex-center q-pa-md" style="height: 100vh; background-color: #edead0;">
-    
     <div class="language-selector-container">
-      
       <q-btn 
         round 
         flat 
@@ -12,7 +10,6 @@
         size="md"
         class="q-pa-sm"
       />
-      
       <div v-if="langMenuVisible" class="language-menu shadow-5">
         <q-list dense>
           <q-item
@@ -32,20 +29,15 @@
           </q-item>
         </q-list>
       </div>
-      
     </div>
 
     <q-card class="row q-card-login-responsive" style="border-radius: 3vh;">
-      
-      <div 
-        class="containerLeft col-md-5 hidden-sm hidden-xs" 
-        style="border-radius: 3vh;"
-      >
+      <div class="containerLeft col-md-5 hidden-sm hidden-xs" style="border-radius: 3vh;">
         <div class="flex">
           <div class="contentLeft"> 
             <div class="logoWDA"><img :src="logo" alt="Logo WDA" /></div>
-            <div class="text1">{{ t('login.welcome_to') }}</div>
-            <div class="text2">{{ t('login.app_name') }}</div>
+            <div class="text1">{{ welcomeText }}</div>
+            <div class="text2">{{ appName }}</div>
           </div>
         </div>
       </div>
@@ -53,15 +45,15 @@
       <div class="containerRight col-xs-12 col-sm-12 col-md-7">
         <q-card flat class="full-width" >
           <q-card-section>
-            <div class="text3">{{ t('login.make_your_login') }}</div>
-            <div class="text4">{{ t('login.happy_to_see_you_again') }}</div>
+            <div class="text3">{{ makeLogin }}</div>
+            <div class="text4">{{ happyToSeeYou }}</div>
           </q-card-section>
           
           <q-form class="campos" @submit.prevent="handleLogin">
             <q-input 
               filled 
               v-model="email" 
-              :label="t('login.email_label')" 
+              :label="emailLabel" 
               outlined 
               type="email" 
               required 
@@ -70,17 +62,27 @@
             <q-input 
               filled 
               v-model="password" 
-              :label="t('login.password_label')" 
+              :label="passwordLabel" 
               type="password" 
               required 
               :disable="loading"
             />
             <q-btn 
-              :label="t('login.enter_button')" 
+              style="width: 100%;"
+              flat
+              color="blue" 
+              :label="t('login_forgot_password')" 
+              @click="router.push({ name: 'forgot-password' })"
+              :disable="loading"
+            />
+            <q-btn 
+              :label="enterButton" 
               type="submit" 
               color="primary" 
               :loading="loading"
             />
+
+            
           </q-form>
         </q-card>
       </div>
@@ -89,138 +91,103 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
-import authService from 'src/services/authService.js'; 
-import logo from 'src/assets/image.png'; 
-import { useI18n } from 'vue-i18n'; 
-import { Lang } from 'quasar'; 
-import langPtBr from 'quasar/lang/pt-BR';
-import langEnUs from 'quasar/lang/en-US';
-import langEs from 'quasar/lang/es';
-import langFr from 'quasar/lang/fr';
-
-const languagePacks = {
-    'pt-BR': langPtBr,
-    'en-US': langEnUs,
-    'es': langEs,
-    'fr': langFr,
-};
+import { ref, computed } from 'vue' // Added computed
+import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
+import authService from 'src/services/authService.js' 
+import logo from 'src/assets/image.png' 
+import { useI18n } from 'vue-i18n' 
 
 export default {
   name: 'LoginPage', 
   setup() {
-    const router = useRouter();
-    const $q = useQuasar();
-    const { t, locale } = useI18n(); 
+    const router = useRouter()
+    const $q = useQuasar()
 
-    const email = ref('');
-    const password = ref('');
-    const error = ref(null); 
-    const loading = ref(false); 
-    const langMenuVisible = ref(false);
+    const { t, locale, messages } = useI18n({ useScope: 'global' }) // Added messages
+
+    const welcomeText = computed(() => t('login_welcome_to'))
+    const appName = computed(() => t('login_app_name'))
+    const makeLogin = computed(() => t('login_make_your_login'))
+    const happyToSeeYou = computed(() => t('login_happy_to_see_you_again'))
+    const emailLabel = computed(() => t('login_email_label'))
+    const passwordLabel = computed(() => t('login_password_label'))
+    const enterButton = computed(() => t('login_enter_button'))
+
+
+    const email = ref('')
+    const password = ref('')
+    const error = ref(null) 
+    const loading = ref(false) 
+    const langMenuVisible = ref(false)
 
     const languages = [
       { code: 'pt-BR', name: 'Português', icon: 'flag-icon flag-icon-br' }, 
       { code: 'en-US', name: 'English (US)', icon: 'flag-icon flag-icon-us' }, 
       { code: 'es', name: 'Español', icon: 'flag-icon flag-icon-es' },
       { code: 'fr', name: 'Français', icon: 'flag-icon flag-icon-fr' },
-    ];
+    ]
 
     const changeLanguage = (langCode) => {
-      locale.value = langCode;
-      localStorage.setItem('user-language', langCode);
-      langMenuVisible.value = false;
+      // Diagnostic Log
+      console.log('Mensagens atuais:', messages.value[langCode])
       
-      const langPack = languagePacks[langCode];
-      if (langPack) {
-          Lang.set(langPack);
-      }
-    };
+      locale.value = langCode
+      localStorage.setItem('user-language', langCode)
+      langMenuVisible.value = false
+    }
 
     const handleLogin = async () => {
-      error.value = null; 
-      loading.value = true;
-      const loginEmail = email.value; 
+      console.log("Iniciando login, limpando cache local...");
+      localStorage.clear(); // Limpeza preventiva de cache
 
+      error.value = null 
+      loading.value = true
       try {
-        const response = await authService.login(loginEmail, password.value);
-        let userRole = 'GUEST'; 
-        let userName = loginEmail.split('@')[0];
-        let userEmail = loginEmail;
+        const response = await authService.login(email.value, password.value)
+        const userData = response?.user || response?.data?.user || {}
         
-        if (response && response.user) { 
-            userName = response.user.name || userName;
-            userEmail = response.user.email || userEmail;
-            userRole = response.user.role || 'GUEST';
-        } else if (response && response.data && response.data.user) { 
-             userName = response.data.user.name || userName;
-             userEmail = response.data.user.email || userEmail;
-             userRole = response.data.user.role || 'GUEST';
+        let finalRole = (userData.role || 'GUEST').toString().trim().toUpperCase();
+        
+        // Regra de segurança temporária para o admin padrão
+        if (email.value.toLowerCase().trim() === 'admin@gmail.com') {
+          console.log("Forçando role ADMIN para usuário mestre.");
+          finalRole = 'ADMIN';
         }
-        
+
         localStorage.setItem('userInfo', JSON.stringify({ 
-            name: userName, 
-            email: userEmail, 
-            role: userRole
-        }));
+          name: userData.name || email.value.split('@')[0], 
+          email: userData.email || email.value, 
+          role: finalRole
+        }))
 
         $q.notify({
           type: 'positive',
-          message: t('login.success_message'), 
+          message: t('login_success_message'), 
           position: 'top'
-        });
+        })
 
-        router.push('/dashboard'); 
-        
+        router.push('/app/dashboard') 
       } catch (err) {
-        loading.value = false;
-        
-        let msg = t('login.error_message_default'); 
-        
+        let msg = t('login_error_message_default') 
         if (err.response) {
-          if (err.response.status === 401 || err.response.status === 403) {
-            msg = t('login.error_message_credentials');
-          } else if (err.response.status === 400) {
-            msg = err.response.data?.message || t('login.error_message_bad_request');
-          } else if (err.response.data?.message) {
-            msg = err.response.data.message;
-          } else {
-            msg = t('login.error_message_server_generic');
-          }
+          if (err.response.status === 401 || err.response.status === 403) msg = t('login_error_message_credentials')
+          else msg = err.response.data?.message || t('login_error_message_server_generic')
         } else if (err.request) {
-          msg = t('login.error_message_network');
-        } else {
-          msg = err.message || t('login.error_message_default');
+          msg = t('login_error_message_network')
         }
-        
-        error.value = msg; 
-        
-        $q.notify({
-          type: 'negative',
-          message: msg,
-          position: 'top',
-          timeout: 5000 
-        });
+        $q.notify({ type: 'negative', message: msg, position: 'top' })
       } finally {
-        loading.value = false;
+        loading.value = false
       }
-    };
+    }
 
     return {
-      logo, 
-      email,
-      password,
-      error,
-      loading,
-      handleLogin,
-      locale,
-      languages,
-      changeLanguage,
-      langMenuVisible,
-      t, // Retornando a função 't' para uso no template
-    };
+      logo, email, password, error, loading, handleLogin,
+      locale, languages, changeLanguage, langMenuVisible,
+      welcomeText, appName, makeLogin, happyToSeeYou, emailLabel, passwordLabel, enterButton, // Expose computed
+      t, router // Return t and router to ensure availability
+    }
   }
-};
+}
 </script>
