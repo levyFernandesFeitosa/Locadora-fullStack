@@ -16,7 +16,7 @@ services:
       - minha_rede
     # Recomendado: Para garantir que o banco de dados esteja pronto antes da API
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,7 +34,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       # DEFINIÇÕES DE BANCO DE DADOS DENTRO DO CONTÊINER DA API:
       # O HOSTNAME agora é 'database', o nome do serviço acima.
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/BookRentalStore 
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/BookRentalStore
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234
       API_SECURITY_TOKEN_SECRET: 41B2C8F7A5E9D0B6F3E1A2C8D9E0F7A5B4C3D2E1F0A9B8C7D6E5F4A3B2C1D0E9
@@ -57,7 +57,27 @@ services:
       - minha_rede
     # Agora depende da API para que o Nginx tente proxyar só depois que a API estiver rodando
     depends_on:
-      - api 
+      - api
+    restart: always
+
+  # 4. SERVIÇO NGROK: Link Público
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-tunnel
+    ports:
+      - "4040:4040"
+    environment:
+      NGROK_AUTHTOKEN: 38U41LC8LtuicerCH7ORVG4Mco6_6DPt72MFxxvZukCG21R7a
+    command:
+      - "http"
+      - "web:80"
+      - "--log"
+      - "stdout"
+      - "--host-header=rewrite"
+    networks:
+      - minha_rede
+    depends_on:
+      - web
     restart: always
 
 networks:
