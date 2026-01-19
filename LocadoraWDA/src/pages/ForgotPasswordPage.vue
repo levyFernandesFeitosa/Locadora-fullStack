@@ -46,14 +46,11 @@
         <q-card flat class="full-width" >
           <q-card-section>
             <div class="text3">{{ t('ForgotPassword_title') }}</div>
-            <div class="text3" v-if="step === 1">{{ t('forgot_instruction') }}</div>
-            <div class="text3" v-else>{{ t('ForgotPassword_success_message') }}</div>
+            <div class="text3">{{ t('forgot_instruction') }}</div>
           </q-card-section>
           
-          <q-form class="campos q-gutter-md q-px-lg" @submit.prevent="handleSubmit">
-            <!-- Passo 1: E-mail -->
+          <q-form class="campos q-gutter-md q-px-lg" @submit.prevent="handleVerifyEmail">
             <q-input 
-              v-if="step === 1"
               filled 
               v-model="email" 
               :label="t('ForgotPassword_email_label')" 
@@ -64,43 +61,8 @@
               class="full-width"
             />
 
-            <!-- Passo 2: Novas Senhas -->
-            <div v-if="step === 2" class="full-width q-gutter-y-md">
-              <q-input 
-                filled 
-                v-model="password" 
-                :label="t('ForgotPassword_new_password_label')" 
-                outlined 
-                type="password" 
-                required 
-                :disable="loading"
-                class="full-width"
-              />
-              <q-input 
-                filled 
-                v-model="confirmPassword" 
-                :label="t('ForgotPassword_confirm_password_label')" 
-                outlined 
-                type="password" 
-                required 
-                :disable="loading"
-                class="full-width"
-              />
-            </div>
-
             <q-btn 
-              v-if="step === 1"
               :label="t('ForgotPassword_button_send')" 
-              type="submit" 
-              color="primary" 
-              :loading="loading"
-              class="full-width"
-              style="height: 50px;"
-            />
-
-            <q-btn 
-              v-if="step === 2"
-              :label="t('ForgotPassword_button_save')" 
               type="submit" 
               color="primary" 
               :loading="loading"
@@ -135,10 +97,7 @@ const router = useRouter()
 const $q = useQuasar()
 const { t, locale } = useI18n({ useScope: 'global' })
 
-const step = ref(1)
 const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
 const loading = ref(false)
 const langMenuVisible = ref(false)
 
@@ -155,27 +114,13 @@ const changeLanguage = (langCode) => {
   langMenuVisible.value = false
 }
 
-const handleSubmit = async () => {
-  if (step.value === 1) {
-    await handleVerifyEmail()
-  } else {
-    await handleResetPassword()
-  }
-}
-
 const handleVerifyEmail = async () => {
   if (!email.value) return
   
   loading.value = true
   try {
     await authService.forgotPassword(email.value)
-    $q.notify({
-      type: 'positive',
-      message: t('ForgotPassword_success_message'),
-      position: 'top',
-      timeout: 3000
-    })
-    step.value = 2
+    router.push({ name: 'reset-password', query: { email: email.value } })
   } catch (err) {
     let msg = t('ForgotPassword_error_default')
     if (err.response?.status === 404) {
@@ -191,47 +136,8 @@ const handleVerifyEmail = async () => {
   }
 }
 
-const handleResetPassword = async () => {
-  if (!password.value || !confirmPassword.value) return
-  
-  if (password.value !== confirmPassword.value) {
-    $q.notify({
-      type: 'negative',
-      message: t('ForgotPassword_password_mismatch'),
-      position: 'top'
-    })
-    return
-  }
-
-  loading.value = true
-  try {
-    await authService.resetPassword(email.value, password.value)
-    $q.notify({
-      type: 'positive',
-      message: t('ForgotPassword_reset_success'),
-      position: 'top',
-      timeout: 3000
-    })
-    
-    // Pequeno delay antes de voltar ao login
-    setTimeout(() => {
-      router.push({ name: 'login' })
-    }, 2000)
-  } catch (err) {
-    $q.notify({
-      type: 'negative',
-      message: t('ForgotPassword_error_default'),
-      position: 'top'
-    })
-  } finally {
-    loading.value = false
-  }
-}
-
-// Segurança: limpa dados sensíveis ao sair da página
+// Segurança
 onUnmounted(() => {
   email.value = ''
-  password.value = ''
-  confirmPassword.value = ''
 })
 </script>

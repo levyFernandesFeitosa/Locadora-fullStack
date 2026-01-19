@@ -28,6 +28,8 @@ export default {
   ForgotPassword_button_save: "Salvar Nova Senha",
   ForgotPassword_password_mismatch: "As senhas não coincidem.",
   ForgotPassword_reset_success: "Senha redefinida com sucesso!",
+  ForgotPassword_user_found: "Usuário localizado! Defina sua nova senha.",
+  ForgotPassword_reset_success_login: "Senha alterada com sucesso! Faça login com sua nova senha.",
   forgot_instruction: "Digite seu e-mail para verificar sua conta.",
 
   // DashboardPage

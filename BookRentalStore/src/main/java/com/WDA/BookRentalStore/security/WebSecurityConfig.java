@@ -32,12 +32,12 @@ public class WebSecurityConfig {
     private SecurityFilter securityFilter;
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 🚨 PASSO 2: APLICAR A CONFIGURAÇÃO CORS
                 .cors(Customizer.withDefaults())
@@ -48,11 +48,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/users").permitAll()
                         .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers("/auth/forgot-password").permitAll()
+                        .requestMatchers("/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
 
                         // Permite requisições OPTIONS (pré-voo do CORS) sem autenticação
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
 
                         .requestMatchers(HttpMethod.GET, "/publishers/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.GET, "/renters/**").hasAnyRole("ADMIN", "USER")
@@ -60,22 +61,21 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/rentals/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("ADMIN", "USER")
 
-
                         .requestMatchers("/publishers/**").hasRole("ADMIN")
                         .requestMatchers("/renters/**").hasRole("ADMIN")
                         .requestMatchers("/books/**").hasRole("ADMIN")
                         .requestMatchers("/rentals/**").hasRole("ADMIN")
                         .requestMatchers("/users/**").hasRole("ADMIN")
 
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

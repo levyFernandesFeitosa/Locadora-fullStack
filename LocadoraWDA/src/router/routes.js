@@ -4,8 +4,9 @@ const routes = [
     path: '/',
     component: () => import('layouts/LoginLayout.vue'),
     children: [
-      { name: 'login', path: '', component: () => import('pages/LoginPage.vue') },
-      { name: 'forgot-password', path: 'forgot-password', component: () => import('pages/ForgotPasswordPage.vue') }
+      { name: 'login', path: '', component: () => import('pages/LoginPage.vue'), meta: { requiresAuth: false } },
+      { name: 'forgot-password', path: 'forgot-password', component: () => import('pages/ForgotPasswordPage.vue'), meta: { requiresAuth: false } },
+      { name: 'reset-password', path: 'reset-password', component: () => import('pages/ResetPasswordPage.vue'), meta: { requiresAuth: false } }
     ]
   },
 

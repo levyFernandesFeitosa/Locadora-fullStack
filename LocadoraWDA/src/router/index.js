@@ -13,8 +13,8 @@ export default route(function () {
     const token = localStorage.getItem('authToken')
 
     // Lista de rotas públicas (que não exigem token)
-    const publicRouteNames = ['login', 'forgot-password']
-    const publicRoutePaths = ['/', '/forgot-password']
+    const publicRouteNames = ['login', 'forgot-password', 'reset-password']
+    const publicRoutePaths = ['/', '/forgot-password', '/reset-password']
 
     const isPublic = publicRouteNames.includes(to.name) || publicRoutePaths.includes(to.path)
 

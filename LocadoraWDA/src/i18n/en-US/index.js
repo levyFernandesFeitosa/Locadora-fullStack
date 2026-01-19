@@ -18,6 +18,8 @@ export default {
   ForgotPassword_button_save: "Save New Password",
   ForgotPassword_password_mismatch: "Passwords do not match.",
   ForgotPassword_reset_success: "Password reset successfully!",
+  ForgotPassword_user_found: "User located! Set your new password.",
+  ForgotPassword_reset_success_login: "Password changed successfully! Log in with your new password.",
   forgot_instruction: "Enter your email to verify your account.",
   login_password_label: 'Password',
   login_enter_button: 'Sign In',
