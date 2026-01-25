@@ -23,11 +23,12 @@ public class TokenService {
     public String generateToken(User user) {
         try {
             // 🚀 CORREÇÃO APLICADA: Converte a String secret para um array de bytes
-            Algorithm algorithm = Algorithm.HMAC256(secret.getBytes(StandardCharsets.UTF_8)); 
+            Algorithm algorithm = Algorithm.HMAC256(secret.getBytes(StandardCharsets.UTF_8));
 
             return JWT.create()
                     .withIssuer("book-rental-api")
                     .withSubject(user.getUserEmail())
+                    .withClaim("role", user.getRole().name())
                     .withExpiresAt(getExpirationInstant())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
@@ -37,17 +38,17 @@ public class TokenService {
         }
     }
 
-    public String validateToken(String token){
-        try{
+    public String validateToken(String token) {
+        try {
             // 🚀 CORREÇÃO APLICADA: Converte a String secret para um array de bytes
             Algorithm algorithm = Algorithm.HMAC256(secret.getBytes(StandardCharsets.UTF_8));
-            
+
             return JWT.require(algorithm)
-                        .withIssuer("book-rental-api")
-                        .build()
-                        .verify(token)
-                        .getSubject();
-        }catch (JWTVerificationException exception){
+                    .withIssuer("book-rental-api")
+                    .build()
+                    .verify(token)
+                    .getSubject();
+        } catch (JWTVerificationException exception) {
             return "";
         }
     }

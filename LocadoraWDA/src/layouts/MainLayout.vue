@@ -76,18 +76,10 @@
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
+      bordered
       class="drawer-main"
-      :width="
-        $q.screen.xs
-          ? 250
-          : $q.screen.sm
-          ? 220
-          : $q.screen.md
-          ? 200
-          : $q.screen.lg
-          ? 300
-          : 300
-      "
+      :width="200"
+      :breakpoint="1024"
       style="background-color: #0d1b2a; color: white"
     >
       <div class="logoWDAALL">

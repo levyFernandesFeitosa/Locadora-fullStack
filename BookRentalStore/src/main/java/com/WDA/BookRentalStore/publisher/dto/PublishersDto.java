@@ -9,22 +9,11 @@ import org.hibernate.validator.constraints.URL;
 public record PublishersDto(
         Integer id,
 
-        @NotBlank(message = "O nome da editora é obrigatório.")
-        @Size(max = 100, message = "O nome não deve exceder 100 caracteres.")
-        String publishersName,
+        @NotBlank(message = "error.validation.publisher_name_required") @Size(max = 100, message = "error.validation.name_max_100") String publishersName,
 
-        @NotBlank(message = "O e-mail é obrigatório.")
-        @Email(message = "Formato de e-mail inválido.")
-        @Size(max = 255, message = "O e-mail não deve exceder 255 caracteres.")
-        String publishersEmail,
+        @NotBlank(message = "error.validation.email_required") @Email(message = "error.validation.email_invalid") @Size(max = 255, message = "error.validation.email_max_255") String publishersEmail,
 
-        @NotBlank(message = "O telefone é obrigatório.")
-        //(ex: (XX) XXXX-XXXX)
-        @Pattern(regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", message = "Formato de telefone inválido.")
-        String publishersTelephone,
+        @NotBlank(message = "error.validation.phone_required") @Size(min = 10, max = 20, message = "error.validation.phone_size") @Pattern(regexp = "^[0-9()\\s-]+$", message = "error.validation.phone_invalid") String publishersTelephone,
 
-        @Size(max = 100, message = "O site não deve exceder 100 caracteres.")
-        @URL(message = "O endereço do site é inválido.")
-        String publishersSite
-) {
+        @Size(max = 100, message = "error.validation.site_max_100") @URL(message = "error.validation.site_invalid") String publishersSite) {
 }

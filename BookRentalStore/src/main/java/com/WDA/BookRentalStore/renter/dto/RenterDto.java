@@ -7,24 +7,13 @@ import jakarta.validation.constraints.Size;
 public record RenterDto(
         Integer id,
 
-        @NotBlank(message = "O nome do locatário é obrigatório.")
-        @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres.")
-        String renterName,
+        @NotBlank(message = "error.validation.renter_name_required") @Size(min = 3, max = 100, message = "error.validation.name_size_3_100") String renterName,
 
-        @NotBlank(message = "O email é obrigatório.")
-        @Email(message = "O formato do email é inválido.")
-        String renterEmail,
+        @NotBlank(message = "error.validation.email_required") @Email(message = "error.validation.email_invalid") String renterEmail,
 
-        @NotBlank(message = "O telefone é obrigatório.")
-        @Size(min = 10, max = 20, message = "O telefone deve ter entre 10 e 20 caracteres.")
-        String renterTelephone,
+        @NotBlank(message = "error.validation.phone_required") @Size(min = 10, max = 20, message = "error.validation.phone_size") String renterTelephone,
 
-        @NotBlank(message = "O CPF é obrigatório.")
-        @Size(min = 11, max = 14, message = "O CPF deve ter entre 11 e 14 caracteres (com ou sem pontuação).")
-        String renterCpf,
+        @NotBlank(message = "error.validation.cpf_required") @Size(min = 11, max = 14, message = "error.validation.cpf_size") String renterCpf,
 
-        @NotBlank(message = "O endereço é obrigatório.")
-        @Size(max = 255, message = "O endereço não pode exceder 255 caracteres.")
-        String renterAddress
-) {
+        @NotBlank(message = "error.validation.address_required") @Size(max = 255, message = "error.validation.address_max_255") String renterAddress) {
 }

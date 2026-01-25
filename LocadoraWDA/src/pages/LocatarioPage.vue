@@ -19,11 +19,12 @@
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
-            class="CadastroBTN full-width"
+            class="CadastroBTN no-wrap q-px-lg"
             :label="$t('RentersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
+            no-caps
           />
         </div>
 
@@ -33,9 +34,10 @@
             standout
             v-model="pesquisa"
             :label="$t('RentersPage_search_placeholder')"
+            hide-bottom-space
           >
             <template v-slot:append>
-              <q-icon name="search" />
+              <q-icon name="search" color="white" />
             </template>
           </q-input>
         </div>
@@ -139,138 +141,169 @@
     </q-table>
 
     <q-dialog v-model="modalCadastro">
-      <q-card class="modal" id="modalGrande">
-        <div class="tituloModal">
-          {{ $t("RentersPage_modal_register_title") }}
-        </div>
-        <q-card-section class="conteudoModal">
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novoLocatario.nome"
-            :label="$t('RentersPage_input_name_label')"
-            :error="errosCadastro.nome"
-            error-color="negative"
-            @input="validarCampo('nome')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novoLocatario.email"
-            :label="$t('RentersPage_input_email_label')"
-            type="email"
-            :error="errosCadastro.email"
-            error-color="negative"
-            @input="validarCampo('email')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novoLocatario.telefone"
-            :label="$t('RentersPage_input_phone_label')"
-            :error="errosCadastro.telefone"
-            error-color="negative"
-            @input="validarCampo('telefone')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novoLocatario.cpf"
-            :label="$t('RentersPage_input_cpf_label')"
-            :error="errosCadastro.cpf"
-            error-color="negative"
-            @input="validarCampo('cpf')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novoLocatario.endereco"
-            :label="$t('RentersPage_input_address_label')"
-            :error="errosCadastro.endereco"
-            error-color="negative"
-            @input="validarCampo('endereco')"
-            required
-          />
-        </q-card-section>
-        <q-card-actions class="botoesModal">
-          <q-btn
-            class="modalBTN"
-            :label="$t('RentersPage_register_button')"
-            color="primary"
-            @click="cadastrarLocatario"
-            :disable="userRole === 'USER'"
-          />
-          <q-btn
-            class="modalBTN"
-            :label="$t('RentersPage_cancel_button')"
-            @click="modalCadastro = false"
-          />
-        </q-card-actions>
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="formCadastro" @submit.prevent="cadastrarLocatario" class="column no-wrap" style="width: 100%; height: 100%">
+          <div class="tituloModal">
+            {{ $t("RentersPage_modal_register_title") }}
+          </div>
+          <q-card-section class="conteudoModal scroll">
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoLocatario.nome"
+                  :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoLocatario.email"
+                  :label="$t('RentersPage_input_email_label') + ' (ex@ex.com)'"
+                  type="email"
+                  :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoLocatario.telefone"
+                  :label="$t('RentersPage_input_phone_label') + ' (apenas números)'"
+                  mask="(##) #####-####"
+                  :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoLocatario.cpf"
+                  :label="$t('RentersPage_input_cpf_label') + ' (###.###.###-##)'"
+                  mask="###.###.###-##"
+                  :rules="[val => !!val || '', val => val.length === 14 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoLocatario.endereco"
+                  :label="$t('RentersPage_input_address_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-actions class="botoesModal">
+            <q-btn
+              class="modalBTN"
+              :label="$t('RentersPage_register_button')"
+              color="primary"
+              type="submit"
+              :disable="userRole === 'USER'"
+            />
+            <q-btn
+              class="modalBTN"
+              :label="$t('RentersPage_cancel_button')"
+              @click="modalCadastro = false"
+            />
+          </q-card-actions>
+        </q-form>
       </q-card>
     </q-dialog>
 
     <q-dialog v-model="modalEditar">
-      <q-card class="modal" id="modalGrande">
-        <div class="tituloModal">
-          {{ $t("RentersPage_modal_update_title") }}
-        </div>
-        <q-card-section class="conteudoModal">
-          <q-input
-            class="inputModal"
-            v-model="locatarioEditar.nome"
-            :label="$t('RentersPage_input_name_label')"
-            :color="errosCadastro.nome ? 'negative' : 'primary'"
-            :error-message="$t('RentersPage_validation_required')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="locatarioEditar.email"
-            :label="$t('RentersPage_input_email_label')"
-            type="email"
-            :error="errosCadastro.email"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="locatarioEditar.telefone"
-            :label="$t('RentersPage_input_phone_label')"
-            :error="errosCadastro.telefone"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="locatarioEditar.cpf"
-            :label="$t('RentersPage_input_cpf_label')"
-            :error="errosCadastro.cpf"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="locatarioEditar.endereco"
-            :label="$t('RentersPage_input_address_label')"
-            :error="errosCadastro.endereco"
-            required
-          />
-        </q-card-section>
-        <q-card-actions class="botoesModal">
-          <q-btn
-            class="modalBTN"
-            :label="$t('RentersPage_update_button')"
-            color="primary"
-            @click="atualizarLocatario"
-            :disable="userRole === 'USER'"
-          />
-          <q-btn
-            class="modalBTN"
-            :label="$t('RentersPage_close_button')"
-            @click="modalEditar = false"
-          />
-        </q-card-actions>
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="formEditar" @submit.prevent="atualizarLocatario" class="column no-wrap" style="width: 100%; height: 100%">
+          <div class="tituloModal">
+            {{ $t("RentersPage_modal_update_title") }}
+          </div>
+          <q-card-section class="conteudoModal scroll">
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                   v-model="locatarioEditar.nome"
+                   :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                   required
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                   v-model="locatarioEditar.email"
+                   :label="$t('RentersPage_input_email_label') + ' (ex@ex.com)'"
+                   type="email"
+                   :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
+                   required
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                   v-model="locatarioEditar.telefone"
+                   :label="$t('RentersPage_input_phone_label') + ' (apenas números)'"
+                   mask="(##) #####-####"
+                   :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
+                   required
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                   v-model="locatarioEditar.cpf"
+                   :label="$t('RentersPage_input_cpf_label') + ' (###.###.###-##)'"
+                   mask="###.###.###-##"
+                   :rules="[val => !!val || '', val => val.length === 14 || '']"
+                   required
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                   v-model="locatarioEditar.endereco"
+                   :label="$t('RentersPage_input_address_label') + ' (mín. 3 caracteres)'"
+                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                   required
+                   hide-bottom-space
+                 />
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-actions class="botoesModal">
+            <q-btn
+              class="modalBTN"
+              :label="$t('RentersPage_update_button')"
+              color="primary"
+              type="submit"
+              :disable="userRole === 'USER'"
+            />
+            <q-btn
+              class="modalBTN"
+              :label="$t('RentersPage_close_button')"
+              @click="modalEditar = false"
+            />
+          </q-card-actions>
+        </q-form>
       </q-card>
     </q-dialog>
 
@@ -327,6 +360,8 @@ const userRole = ref(getCurrentUserRole());
 
 // 1. Variáveis de Estado (Modais e Formulários)
 const allLocatarios = ref([]);
+const formCadastro = ref(null);
+const formEditar = ref(null);
 const loading = ref(false);
 const pesquisa = ref("");
 const locatarioParaExcluir = ref(null);
@@ -339,7 +374,6 @@ const novoLocatario = ref({
   cpf: "",
   endereco: "",
 });
-const errosCadastro = ref({});
 
 const modalEditar = ref(false);
 const locatarioEditar = ref({
@@ -388,57 +422,7 @@ const columns = computed(() => [
   },
 ]);
 
-// --- 3. Funções de UI (Modais e Validação) ---
-
-const validarCampo = (campo) => {
-  if (campo === "nome" && !novoLocatario.value.nome) {
-    errosCadastro.value.nome = true;
-  } else {
-    delete errosCadastro.value.nome;
-  }
-
-  if (campo === "email" && !novoLocatario.value.email) {
-    errosCadastro.value.email = true;
-  } else {
-    delete errosCadastro.value.email;
-  }
-
-  if (campo === "telefone" && !novoLocatario.value.telefone) {
-    errosCadastro.value.telefone = true;
-  } else {
-    delete errosCadastro.value.telefone;
-  }
-
-  if (campo === "cpf" && !novoLocatario.value.cpf) {
-    errosCadastro.value.cpf = true;
-  } else {
-    delete errosCadastro.value.cpf;
-  }
-
-  if (campo === "endereco" && !novoLocatario.value.endereco) {
-    errosCadastro.value.endereco = true;
-  } else {
-    delete errosCadastro.value.endereco;
-  }
-};
-
-const validarFormulario = () => {
-  errosCadastro.value = {};
-  let valido = true;
-
-  const camposObrigatorios = ["nome", "email", "telefone", "cpf", "endereco"];
-
-  camposObrigatorios.forEach((campo) => {
-    if (
-      !novoLocatario.value[campo] ||
-      novoLocatario.value[campo].trim() === ""
-    ) {
-      errosCadastro.value[campo] = true;
-      valido = false;
-    }
-  });
-  return valido;
-};
+// --- 3. Funções de UI (Modais) ---
 
 const abrirModalCadastro = () => {
   if (userRole.value === 'USER') {
@@ -457,7 +441,6 @@ const abrirModalCadastro = () => {
     cpf: "",
     endereco: "",
   };
-  errosCadastro.value = {};
   modalCadastro.value = true;
 };
 
@@ -479,7 +462,6 @@ const editarLocatario = (locatario) => {
     cpf: locatario.renterCpf,
     endereco: locatario.renterAddress,
   };
-  errosCadastro.value = {};
   modalEditar.value = true;
 };
 
@@ -504,10 +486,10 @@ const fetchLocatarios = async () => {
     const data = await locatarioService.getAll();
     allLocatarios.value = data;
   } catch (error) {
-    const fallbackMsg = t("RentersPage_error_load_default") + (error.response?.data?.message || error.message || t("RentersPage_error_connection"));
+    const errorMsg = error.response?.data?.message || error.message || t("RentersPage_error_load_default");
     $q.notify({
       type: "negative",
-      message: fallbackMsg,
+      message: errorMsg,
       timeout: 5000,
     });
   } finally {
@@ -525,40 +507,43 @@ const cadastrarLocatario = async () => {
     return;
   }
 
-  if (!validarFormulario()) {
-    $q.notify({
-      type: "warning",
-      message: t("RentersPage_validation_fill_all"),
-    });
+  const errors = [];
+  if (!novoLocatario.value.nome || novoLocatario.value.nome.length < 3) errors.push(t("error.validation.renter_name_required"));
+  if (!novoLocatario.value.email || !/.+@.+\..+/.test(novoLocatario.value.email)) errors.push(t("error.validation.email_invalid"));
+  if (!novoLocatario.value.telefone || novoLocatario.value.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
+  if (!novoLocatario.value.cpf || novoLocatario.value.cpf.replace(/\D/g, '').length < 11) errors.push(t("error.validation.cpf_size"));
+  if (!novoLocatario.value.endereco || novoLocatario.value.endereco.length < 3) errors.push(t("error.validation.address_required"));
+
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
     return;
   }
+
+  const success = await formCadastro.value.validate();
+  if (!success) return;
 
   const dataAPI = {
     renterName: novoLocatario.value.nome,
     renterEmail: novoLocatario.value.email,
     renterTelephone: novoLocatario.value.telefone,
-    renterCpf: novoLocatario.value.cpf,
+    renterCpf: novoLocatario.value.cpf.replace(/\D/g, ''),
     renterAddress: novoLocatario.value.endereco,
   };
 
   try {
     await locatarioService.create(dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage_success_register") });
+    $q.notify({ type: "positive", message: t("RentersPage_success_register"), position: "top" });
     modalCadastro.value = false;
     fetchLocatarios();
   } catch (error) {
-    let errorMessage = t("RentersPage_error_unknown");
-    if (error.response?.status === 403) {
-      errorMessage = t("RentersPage_error_permission_register_backend");
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else {
-      errorMessage = error.message || t("RentersPage_error_connection");
-    }
-
+    console.log("Erro no cadastro de locatário:", error.response?.data);
+    const apiMsg = error.response?.data?.message;
+    const errorMessage = apiMsg ? t(apiMsg) : t("RentersPage_error_load_default");
+    
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
       timeout: 5000,
     });
   }
@@ -574,25 +559,32 @@ const atualizarLocatario = async () => {
     return;
   }
 
-  // NOTE: Validação do formulário de edição foi removida no código original,
-  // mas deve ser reintroduzida em um ambiente de produção.
-  // if (!validarFormularioEdicao()) {
-  //   $q.notify({ type: "warning", message: t("RentersPage.validation_fill_all") });
-  //   return;
-  // }
+  const errors = [];
+  if (!locatarioEditar.value.nome || locatarioEditar.value.nome.length < 3) errors.push(t("error.validation.renter_name_required"));
+  if (!locatarioEditar.value.email || !/.+@.+\..+/.test(locatarioEditar.value.email)) errors.push(t("error.validation.email_invalid"));
+  if (!locatarioEditar.value.telefone || locatarioEditar.value.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
+  if (!locatarioEditar.value.cpf || locatarioEditar.value.cpf.replace(/\D/g, '').length < 11) errors.push(t("error.validation.cpf_size"));
+  if (!locatarioEditar.value.endereco || locatarioEditar.value.endereco.length < 3) errors.push(t("error.validation.address_required"));
 
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
+    return;
+  }
+
+  const success = await formEditar.value.validate();
+  if (!success) return;
 
   const dataAPI = {
     renterName: locatarioEditar.value.nome,
     renterEmail: locatarioEditar.value.email,
     renterTelephone: locatarioEditar.value.telefone,
-    renterCpf: locatarioEditar.value.cpf,
+    renterCpf: locatarioEditar.value.cpf.replace(/\D/g, ''),
     renterAddress: locatarioEditar.value.endereco,
   };
 
   try {
     await locatarioService.update(locatarioEditar.value.id, dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage_success_update") });
+    $q.notify({ type: "positive", message: t("RentersPage_success_update"), position: "top" });
     modalEditar.value = false;
 
     // Atualização local da linha da tabela
@@ -607,18 +599,13 @@ const atualizarLocatario = async () => {
     }
 
   } catch (error) {
-    let errorMessage = t("RentersPage_error_update_default");
-    if (error.response?.status === 403) {
-      errorMessage = t("RentersPage_error_permission_update_backend");
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else {
-      errorMessage = error.message || t("RentersPage_error_unexpected");
-    }
+    console.log("Erro ao atualizar locatário:", error.response?.data);
+    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || t("RentersPage_error_update_default");
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
       timeout: 5000,
     });
   }
@@ -647,24 +634,18 @@ const excluirLocatario = async () => {
     locatarioParaExcluir.value = null;
 
   } catch (error) {
-    let errorMessage = t("RentersPage_error_delete_default");
+    console.log("Erro ao excluir locatário:", error.response?.data);
+    let apiMsg = error.response?.data?.message;
+    let errorMessage = apiMsg ? t(apiMsg) : t("RentersPage_error_delete_default");
 
-    if (error.response?.status === 403) {
-      errorMessage = t("RentersPage_error_permission_delete_backend");
-    } else if (error.response?.status === 400) {
-      const apiMessage = error.response.data?.message;
-      if (apiMessage && typeof apiMessage === "string" && apiMessage.includes('vinculado')) {
-        errorMessage = t("RentersPage_error_delete_linked"); // Locatário com aluguel ativo
-      } else {
-        errorMessage = t("RentersPage_error_delete_linked");
-      }
-    } else {
-      errorMessage = error.message || t("RentersPage_error_unexpected");
+    if (error.response?.status === 409 || (apiMsg && apiMsg.includes("linked"))) {
+      errorMessage = t("error.resource_linked");
     }
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
       timeout: 7000,
     });
   }

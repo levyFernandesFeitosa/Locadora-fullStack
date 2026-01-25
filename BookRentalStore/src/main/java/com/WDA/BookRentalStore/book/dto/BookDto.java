@@ -6,27 +6,17 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record BookDto(
-        Integer id,
+                Integer id,
 
-        @NotBlank(message = "O título é obrigatório.")
-        @Size(max = 255, message = "O título não pode exceder 255 caracteres.")
-        String bookTitle,
+                @NotBlank(message = "error.validation.book_title_required") @Size(max = 255, message = "error.validation.title_max_255") String bookTitle,
 
-        @NotBlank(message = "O autor é obrigatório.")
-        @Size(max = 100, message = "O nome do autor não pode exceder 100 caracteres.")
-        String bookAuthor,
+                @NotBlank(message = "error.validation.author_required") @Size(max = 100, message = "error.validation.author_max_100") String bookAuthor,
 
-        @NotNull(message = "A data de lançamento é obrigatória.")
-        @PastOrPresent(message = "A data de lançamento não pode ser futura.")
-        LocalDate bookLaunch,
+                @NotNull(message = "error.validation.launch_date_required") @PastOrPresent(message = "error.validation.launch_date_past") LocalDate bookLaunch,
 
-        @NotNull(message = "O estoque total é obrigatório.")
-        @Min(value = 1, message = "O estoque total deve ser no mínimo 1.")
-        Integer bookTotal,
+                @NotNull(message = "error.validation.total_quantity_required") @Min(value = 1, message = "error.validation.total_min_1") Integer bookTotal,
 
-        @Min(value = 0, message = "O número de cópias em uso não pode ser negativo.")
-        Integer bookInUse,
+                @Min(value = 0, message = "error.validation.in_use_negative") Integer bookInUse,
 
-        @NotNull(message = "A editora é obrigatória.")
-        Publishers publisher) {
+                @NotNull(message = "error.validation.publisher_required") Publishers publisher) {
 }

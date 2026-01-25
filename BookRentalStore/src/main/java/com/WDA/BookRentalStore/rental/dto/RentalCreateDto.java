@@ -7,13 +7,13 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record RentalCreateDto(
-                Integer id,
+        Integer id,
 
-                @NotNull(message = "O Locatário é obrigatório.") Integer renterId,
+        @NotNull(message = "O Locatário é obrigatório.") Integer renterId,
 
-                @NotNull(message = "O livro é obrigátorio.") Integer bookId, // Recebe o ID
+        @NotNull(message = "O livro é obrigátorio.") Integer bookId, // Recebe o ID
 
-                @JsonFormat(pattern = "yyyy-MM-dd") LocalDate rentalRentedDate,
+        @NotNull(message = "A data de aluguel é obrigatória.") @JsonFormat(pattern = "yyyy-MM-dd") LocalDate rentalRentedDate,
 
-                @NotNull(message = "A data de devolução é obrigatória.") @FutureOrPresent(message = "A data de devulução deve ser hoje ou futura.") @JsonFormat(pattern = "yyyy-MM-dd") LocalDate rentalDeadline) {
+        @NotNull(message = "A data de devolução é obrigatória.") @FutureOrPresent(message = "A data de devulução deve ser hoje ou futura.") @JsonFormat(pattern = "yyyy-MM-dd") LocalDate rentalDeadline) {
 }

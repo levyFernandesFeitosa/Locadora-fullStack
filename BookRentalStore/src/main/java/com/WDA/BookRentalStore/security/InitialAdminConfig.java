@@ -1,6 +1,5 @@
 package com.WDA.BookRentalStore.security;
 
-
 import com.WDA.BookRentalStore.user.model.Role;
 import com.WDA.BookRentalStore.user.model.User;
 import com.WDA.BookRentalStore.user.repositories.UserRepository;
@@ -15,7 +14,7 @@ public class InitialAdminConfig {
     @Bean
     public CommandLineRunner createInitialAdmin(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            String adminEmail = "admin@gmail.com";
+            String adminEmail = "admin@admin.com";
             if (userRepository.findByUserEmail(adminEmail).isEmpty()) {
 
                 System.out.println("🚨 Criando usuário ADMINISTRADOR inicial...");
@@ -23,11 +22,11 @@ public class InitialAdminConfig {
                 User adminUser = new User();
                 adminUser.setUserName("Admin Inicial");
                 adminUser.setUserEmail(adminEmail);
-                adminUser.setUserPassword(passwordEncoder.encode("SenhaSuperSecreta123"));
+                adminUser.setUserPassword(passwordEncoder.encode("admin123"));
                 adminUser.setRole(Role.ADMIN);
 
                 userRepository.save(adminUser);
-                System.out.println("✅ Usuário 'admin' inicial criado com sucesso. Senha: SenhaSuperSecreta123");
+                System.out.println("✅ Usuário 'admin' inicial criado com sucesso. Senha: admin123");
             }
         };
     }

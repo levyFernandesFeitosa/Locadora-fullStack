@@ -1,6 +1,5 @@
 package com.WDA.BookRentalStore.exceptions;
 
-
 import com.WDA.BookRentalStore.book.exception.BookAlreadyExistsException;
 import com.WDA.BookRentalStore.book.exception.BookNotFoundException;
 import com.WDA.BookRentalStore.publisher.exception.PublishersAlreadyExistsException;
@@ -27,8 +26,8 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Recurso Não Encontrado");
-        body.put("message", ex.getMessage());
+        body.put("error", "NOT_FOUND");
+        body.put("message", ex.getMessage()); // This will be the key
 
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
@@ -40,14 +39,14 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Erro Interno no Servidor");
-        body.put("message", safeMessage);
+        body.put("error", "INTERNAL_ERROR");
+        body.put("message", "error.internal");
 
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(BookNotFoundException.class)
-    public ResponseEntity<Object> handleBookNotFound(BookNotFoundException ex){
+    public ResponseEntity<Object> handleBookNotFound(BookNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.NOT_FOUND.value());
@@ -58,23 +57,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BookAlreadyExistsException.class)
-    public ResponseEntity<Object> handleBookAlreadyExists(BookAlreadyExistsException ex){
+    public ResponseEntity<Object> handleBookAlreadyExists(BookAlreadyExistsException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.CONFLICT.value());
-        body.put("error", "Conflito de Dados");
+        body.put("error", "CONFLICT");
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(RentalBusinessException.class)
-    public ResponseEntity<Object> handleRentalBusinessException(RentalBusinessException ex){
+    public ResponseEntity<Object> handleRentalBusinessException(RentalBusinessException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.CONFLICT.value()); // Status 409
-        body.put("error", "Conflito de Regra de Negócio");
-        body.put("message", ex.getMessage()); // Expondo a mensagem clara do Service
+        body.put("error", "BUSINESS_CONFLICT");
+        body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
@@ -92,12 +91,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+        String combinedMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(" | "));
 
+        errors.put("message", combinedMessage);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }

@@ -15,4 +15,8 @@ public interface RentalRepository extends JpaRepository<Rental, Integer> {
     List<Rental> findAllByOrderByIdDesc();
 
     Optional<Rental> findByRenterAndBookAndStatus(Renter renter, Book book, Status status);
+
+    boolean existsByRenter(Renter renter);
+
+    boolean existsByBook(Book book);
 }

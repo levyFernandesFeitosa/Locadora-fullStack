@@ -145,19 +145,19 @@ export default {
       loading.value = true
       try {
         const response = await authService.login(email.value, password.value)
-        const userData = response?.user || response?.data?.user || {}
+        const userDetails = response || {}
         
-        let finalRole = (userData.role || 'GUEST').toString().trim().toUpperCase();
+        let finalRole = (userDetails.role || 'GUEST').toString().trim().toUpperCase();
         
-        // Regra de segurança temporária para o admin padrão
-        if (email.value.toLowerCase().trim() === 'admin@gmail.com') {
+        // Regra de segurança temporária para o admin padrão (ajustado para o novo e-mail)
+        if (email.value.toLowerCase().trim() === 'admin@admin.com') {
           console.log("Forçando role ADMIN para usuário mestre.");
           finalRole = 'ADMIN';
         }
 
         localStorage.setItem('userInfo', JSON.stringify({ 
-          name: userData.name || email.value.split('@')[0], 
-          email: userData.email || email.value, 
+          name: userDetails.userName || email.value.split('@')[0], 
+          email: userDetails.userEmail || email.value, 
           role: finalRole
         }))
 

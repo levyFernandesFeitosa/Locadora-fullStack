@@ -6,6 +6,7 @@ import com.WDA.BookRentalStore.publisher.exception.PublishersAlreadyExistsExcept
 import com.WDA.BookRentalStore.publisher.exception.PublishersNotFoundException;
 import com.WDA.BookRentalStore.publisher.model.Publishers;
 import com.WDA.BookRentalStore.publisher.repository.PublishersRepository;
+import com.WDA.BookRentalStore.rental.exception.RentalBusinessException;
 import com.WDA.BookRentalStore.renter.model.Renter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +22,24 @@ public class PublishersService {
     @Autowired
     PublishersRepository repository;
 
+    @Autowired
+    private com.WDA.BookRentalStore.book.repositorie.BookRepository bookRepository;
+
     private final WebClient webClient = WebClient.create();
 
-    public List<Publishers> getAll(){
+    public List<Publishers> getAll() {
         return repository.findAllByOrderByIdDesc();
     }
 
-    public Publishers getById(Integer id){
-        return repository.findById(id).orElseThrow(() -> new PublishersNotFoundException("Publisher with ID: " + id + " not found"));
+    public Publishers getById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new PublishersNotFoundException("Publisher with ID: " + id + " not found"));
 
     }
 
-    public Publishers save(PublishersDto dto){
-        if (repository.findByPublishersEmail(dto.publishersEmail()).isPresent()){
-            throw new PublishersNotFoundException("O e-mail '" + dto.publishersEmail() + "' já está cadastrado por outra editora.");
+    public Publishers save(PublishersDto dto) {
+        if (repository.findByPublishersEmail(dto.publishersEmail()).isPresent()) {
+            throw new PublishersAlreadyExistsException("error.conflict_email");
         }
         if (dto.publishersSite() != null && !dto.publishersSite().isBlank()) {
             validatePublisherSite(dto.publishersSite());
@@ -45,15 +50,20 @@ public class PublishersService {
         return repository.save(publishers);
     }
 
-    public void delete(Integer id){
+    public void delete(Integer id) {
         Publishers publishers = getById(id);
+
+        if (bookRepository.existsByPublisher(publishers)) {
+            throw new RentalBusinessException("error.resource_linked");
+        }
+
         repository.delete(publishers);
     }
 
-    public Publishers update(Integer id, PublishersDto dto){
+    public Publishers update(Integer id, PublishersDto dto) {
         Optional<Publishers> publisherWithSameEmail = repository.findByPublishersEmail(dto.publishersEmail());
         if (publisherWithSameEmail.isPresent() && !publisherWithSameEmail.get().getId().equals(id)) {
-            throw new PublishersAlreadyExistsException("O e-mail '" + dto.publishersEmail() + "' já está sendo usado por outra editora.");
+            throw new PublishersAlreadyExistsException("error.conflict_email");
         }
 
         if (dto.publishersSite() != null && !dto.publishersSite().isBlank()) {
@@ -66,6 +76,7 @@ public class PublishersService {
 
         return repository.save(existingPublishers);
     }
+
     private void validatePublisherSite(String siteUrl) {
         String url = siteUrl;
         if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://")) {
@@ -82,13 +93,13 @@ public class PublishersService {
 
             if (!status.is2xxSuccessful()) {
                 throw new com.WDA.BookRentalStore.publisher.exception.InvalidPublisherSiteException(
-                        "O site da editora retornou um status HTTP de erro (" + status.value() + "). Verifique o endereço."
-                );
+                        "O site da editora retornou um status HTTP de erro (" + status.value()
+                                + "). Verifique o endereço.");
             }
         } catch (Exception e) {
             throw new com.WDA.BookRentalStore.publisher.exception.InvalidPublisherSiteException(
-                    "Não foi possível acessar o site '" + url + "'. Erro de conexão ou URL não existe. Detalhe: " + e.getLocalizedMessage()
-            );
+                    "Não foi possível acessar o site '" + url + "'. Erro de conexão ou URL não existe. Detalhe: "
+                            + e.getLocalizedMessage());
         }
     }
 }

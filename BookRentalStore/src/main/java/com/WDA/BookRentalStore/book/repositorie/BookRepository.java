@@ -14,12 +14,15 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, Integer> {
 
     Optional<Book> findByBookTitle(String bookTitle);
+
     List<Book> findAllByOrderByIdDesc();
+
     @Query(value = "SELECT b.book_title, COUNT(r.id) as total_rents " +
             "FROM book b JOIN rental r ON b.id = r.book_id " +
             "GROUP BY b.book_title " +
             "ORDER BY total_rents DESC " +
-            "LIMIT 5",
-            nativeQuery = true)
+            "LIMIT 5", nativeQuery = true)
     List<Object[]> findTopRentedBooksNative();
+
+    boolean existsByPublisher(Publishers publisher);
 }

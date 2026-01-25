@@ -54,11 +54,19 @@ public class UserService implements UserDetailsService {
 
     public void delete(Integer id) {
         User user = getById(id);
+        if ("admin@admin.com".equals(user.getUserEmail())) {
+            throw new RuntimeException("O administrador fixo ('admin@admin.com') não pode ser excluído.");
+        }
         repository.delete(user);
     }
 
     public User update(Integer id, UserDto dto) {
         User existingUser = getById(id);
+
+        if ("admin@admin.com".equals(existingUser.getUserEmail())) {
+            throw new RuntimeException("O administrador fixo ('admin@admin.com') não pode ser alterado.");
+        }
+
         repository.findByUserEmail(dto.userEmail())
                 .ifPresent(u -> {
                     if (!u.getId().equals(id))

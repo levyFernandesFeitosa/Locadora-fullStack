@@ -19,11 +19,12 @@
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
-            class="CadastroBTN"
+            class="CadastroBTN no-wrap q-px-md"
             :label="$t('RentalsPage_register_button')"
             color="primary"
             @click="openCreateModal"
             icon="person_add"
+            no-caps
           />
         </div>
 
@@ -33,6 +34,7 @@
             standout
             v-model="searchTerm"
             :label="$t('RentalsPage_search_placeholder')"
+            hide-bottom-space
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -50,6 +52,8 @@
       :hide-header="$q.screen.lt.md"
       :rows-per-page-options="[5, 10, 15, 0]"
       :pagination="{
+        sortBy: 'id',
+        descending: true,
         page: 1,
         rowsPerPage: $q.screen.lt.md ? 0 : 5,
       }"
@@ -181,9 +185,9 @@
     </q-table>
 
     <q-dialog v-model="modalAberto">
-      <q-card class="modal">
-        <q-form @submit.prevent="salvarAluguel" style="width: 100%">
-          <q-card-section class="conteudoModal">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="aluguelFormRef" @submit.prevent="salvarAluguel" class="column no-wrap" style="width: 100%; height: 100%">
+          <q-card-section class="conteudoModal q-gutter-y-md scroll">
             <div class="tituloModal">
               {{
                 editando
@@ -192,114 +196,145 @@
               }}
             </div>
 
-            <q-select
-              class="inputModalSelect"
-              outlined
-              v-model="aluguelForm.renterId"
-              :options="locatariosOptions"
-              option-value="value"
-              option-label="label"
-              emit-value
-              map-options
-              :label="$t('RentalsPage_input_renter_label')"
-              :error="errosCadastro.renterId"
-              error-color="negative"
-              @update:model-value="validarCampo('renterId')"
-              :disable="editando"
-            />
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-select
+                  class="inputModalSelect"
+                  outlined
+                  v-model="aluguelForm.renterId"
+                  use-input
+                  fill-input
+                  hide-selected
+                  input-debounce="0"
+                  :options="locatariosOptionsFiltrados"
+                  @filter="filterFnRenters"
+                  option-value="value"
+                  option-label="label"
+                  emit-value
+                  map-options
+                  :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '']"
+                  :disable="editando"
+                  hide-bottom-space
+                >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No results
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
 
-            <q-select
-              class="inputModalSelect"
-              outlined
-              v-model="aluguelForm.bookId"
-              :options="livrosOptions"
-              option-value="value"
-              option-label="label"
-              emit-value
-              map-options
-              :label="$t('RentalsPage_input_book_label')"
-              :error="errosCadastro.bookId"
-              error-color="negative"
-              @update:model-value="validarCampo('bookId')"
-              :disable="editando"
-            >
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps">
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.label }}</q-item-label>
-                    <q-item-label caption
-                      >{{ $t("RentalsPage_available_caption") }}:
-                      {{ scope.opt.totalAvailable }}</q-item-label
-                    >
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+              <div class="col-12">
+                <q-select
+                  class="inputModalSelect"
+                  outlined
+                  v-model="aluguelForm.bookId"
+                  use-input
+                  fill-input
+                  hide-selected
+                  input-debounce="0"
+                  :options="livrosOptionsFiltrados"
+                  @filter="filterFnBooks"
+                  option-value="value"
+                  option-label="label"
+                  emit-value
+                  map-options
+                  :label="$t('RentalsPage_input_book_label') + ' (Selecione)'"
+                  :rules="[val => !!val || '']"
+                  :disable="editando"
+                  hide-bottom-space
+                >
+                  <template v-slot:option="scope">
+                    <q-item v-bind="scope.itemProps">
+                      <q-item-section>
+                        <q-item-label>{{ scope.opt.label }}</q-item-label>
+                        <q-item-label caption
+                          >{{ $t("RentalsPage_available_caption") }}:
+                          {{ scope.opt.totalAvailable }}</q-item-label
+                        >
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No results
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              :model-value="formattedRentDate"
-              readonly
-              :label="$t('RentalsPage_input_rent_date_label')"
-              :error="errosCadastro.rentDate"
-              error-color="negative"
-              :disable="editando"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer" v-if="!editando">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date
-                      v-model="aluguelForm.rentDate"
-                      mask="YYYY-MM-DD"
-                      color="primary"
-                      today-btn
-                      @update:model-value="validarCampo('rentDate')"
-                    >
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup :label="t('RentersPage_close_button')" color="primary" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="aluguelForm.rentDate"
+                  mask="##/##/####"
+                  :label="$t('RentalsPage_input_rent_date_label') + ' (DD/MM/YYYY)'"
+                  :rules="[val => !!val || '']"
+                  :disable="editando"
+                  hide-bottom-space
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer" v-if="!editando" color="white">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="aluguelForm.rentDate"
+                          mask="DD/MM/YYYY"
+                          color="primary"
+                          today-btn
+                        >
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup :label="$t('RentersPage_close_button')" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              :model-value="formattedDeadLine"
-              readonly
-              :label="$t('RentalsPage_input_deadline_label')"
-              :error="errosCadastro.deadLine"
-              error-color="negative"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date
-                      v-model="aluguelForm.deadLine"
-                      mask="YYYY-MM-DD"
-                      color="primary"
-                      today-btn
-                      @update:model-value="validarCampo('deadLine')"
-                    >
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup :label="t('RentersPage_close_button')" color="primary" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="aluguelForm.deadLine"
+                  mask="##/##/####"
+                  :label="$t('RentalsPage_input_deadline_label') + ' (DD/MM/YYYY)'"
+                  :rules="[val => !!val || '', val => new Date(val.split('/').reverse().join('-')) >= new Date(aluguelForm.rentDate.split('/').reverse().join('-')) || '']"
+                  hide-bottom-space
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer" color="white">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="aluguelForm.deadLine"
+                          mask="DD/MM/YYYY"
+                          color="primary"
+                          today-btn
+                        >
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup :label="$t('RentersPage_close_button')" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
           </q-card-section>
 
           <q-card-actions class="botoesModal">
@@ -415,9 +450,42 @@ const statusMap = computed(() => ({
 }));
 
 const alugueis = ref([]);
+const aluguelFormRef = ref(null);
 const loading = ref(false);
 const locatariosOptions = ref([]);
+const locatariosOptionsFiltrados = ref([]);
 const livrosOptions = ref([]);
+const livrosOptionsFiltrados = ref([]);
+
+function filterFnRenters(val, update) {
+  if (val === '') {
+    update(() => {
+      locatariosOptionsFiltrados.value = locatariosOptions.value;
+    });
+    return;
+  }
+  update(() => {
+    const needle = val.toLowerCase();
+    locatariosOptionsFiltrados.value = locatariosOptions.value.filter(
+      v => v.label.toLowerCase().indexOf(needle) > -1
+    );
+  });
+}
+
+function filterFnBooks(val, update) {
+  if (val === '') {
+    update(() => {
+      livrosOptionsFiltrados.value = livrosOptions.value;
+    });
+    return;
+  }
+  update(() => {
+    const needle = val.toLowerCase();
+    livrosOptionsFiltrados.value = livrosOptions.value.filter(
+      v => v.label.toLowerCase().indexOf(needle) > -1
+    );
+  });
+}
 
 const aluguelForm = ref({
   id: null,
@@ -481,14 +549,23 @@ const columns = computed(() => [
 function formatarData(dataISO) {
   if (!dataISO) return "";
   
-  const dateStr = String(dataISO).substring(0, 10);
-  if (dateStr === "undefined" || dateStr === "null" || dateStr === "") {
-    return "";
+  let dateObj;
+  
+  if (dataISO.includes('/')) {
+    // Caso venha da máscara DD/MM/YYYY
+    const [day, month, year] = dataISO.split('/').map(Number);
+    dateObj = new Date(year, month - 1, day);
+  } else {
+    // Caso venha do banco YYYY-MM-DD
+    const dateStr = String(dataISO).substring(0, 10);
+    if (dateStr === "undefined" || dateStr === "null" || dateStr === "") {
+      return "";
+    }
+    const [year, month, day] = dateStr.split('-').map(Number);
+    dateObj = new Date(year, month - 1, day);
   }
 
-  // Divide a string YYYY-MM-DD para evitar que o JS interprete como UTC (o que causaria o off-by-one)
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const dateObj = new Date(year, month - 1, day);
+  if (isNaN(dateObj.getTime())) return "";
 
   const format = locale.value.startsWith("en") ? "MM/DD/YYYY" : "DD/MM/YYYY";
   return date.formatDate(dateObj, format);
@@ -615,7 +692,8 @@ async function fetchAllData() {
       totalAvailable: b.bookTotal - b.bookInUse,
     }));
   } catch (error) {
-    $q.notify({ type: "negative", message: t("RentalsPage_error_load_default") });
+    const errorMessage = error.response?.data?.message || error.message || t("RentalsPage_error_load_default");
+    $q.notify({ type: "negative", message: errorMessage });
   } finally {
     loading.value = false;
   }
@@ -638,8 +716,8 @@ function openEditModal(aluguel) {
     id: aluguel.id,
     renterId: aluguel.renter?.id || null, 
     bookId: aluguel.book?.id || null, 
-    rentDate: aluguel.rentalRentedDate?.substring(0, 10) || null,
-    deadLine: aluguel.rentalDeadline?.substring(0, 10) || null,
+    rentDate: aluguel.rentalRentedDate ? formatarData(aluguel.rentalRentedDate) : null,
+    deadLine: aluguel.rentalDeadline ? formatarData(aluguel.rentalDeadline) : null,
   };
   modalAberto.value = true;
 }
@@ -654,38 +732,56 @@ async function salvarAluguel() {
     return;
   }
 
-  if (!validarFormulario()) {
-    $q.notify({ type: "warning", message: t("RentalsPage_validation_fill_all") });
+  const errors = [];
+  if (!aluguelForm.value.renterId) errors.push(t("RentalsPage_input_renter_label") + " " + t("validation_required"));
+  if (!aluguelForm.value.bookId) errors.push(t("RentalsPage_input_book_label") + " " + t("validation_required"));
+  if (!aluguelForm.value.deadLine) errors.push(t("RentalsPage_input_deadline_label") + " " + t("validation_required"));
+
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
     return;
   }
 
+  const success = await aluguelFormRef.value.validate();
+  if (!success) return;
+
   salvando.value = true;
   
+  function converterParaISO(dataBR) {
+    if (!dataBR) return null;
+    if (dataBR.includes('-')) return dataBR;
+    const [day, month, year] = dataBR.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
   const dataToSend = {
     id: aluguelForm.value.id, 
     renterId: aluguelForm.value.renterId,
     bookId: aluguelForm.value.bookId,
-    rentalRentedDate: aluguelForm.value.rentDate, 
-    rentalDeadline: aluguelForm.value.deadLine, 
+    rentalRentedDate: converterParaISO(aluguelForm.value.rentDate), 
+    rentalDeadline: converterParaISO(aluguelForm.value.deadLine), 
   };
 
   try {
     if (editando.value) {
       await AlugueisService.updateAluguel(aluguelForm.value.id, dataToSend);
-      $q.notify({ type: "positive", message: t("RentalsPage_success_update") });
+      $q.notify({ type: "positive", message: t("RentalsPage_success_update"), position: "top" });
     } else {
       await AlugueisService.createAluguel(dataToSend);
-      $q.notify({ type: "positive", message: t("RentalsPage_success_register") });
+      $q.notify({ type: "positive", message: t("RentalsPage_success_register"), position: "top" });
     }
 
     await fetchAllData();
     fecharModal();
   } catch (error) {
-    let errorMessage = t("RentalsPage_error_save_default");
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    }
-    $q.notify({ type: "negative", message: errorMessage });
+    console.log("Erro ao salvar aluguel:", error.response?.data);
+    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || t("RentalsPage_error_save_default");
+    $q.notify({ 
+      type: "negative", 
+      message: errorMessage,
+      position: "top",
+      timeout: 5000
+    });
   } finally {
     salvando.value = false;
   }

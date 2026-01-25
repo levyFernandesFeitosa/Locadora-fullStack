@@ -44,7 +44,11 @@ public class authController {
 
             String token = tokenService.generateToken(user);
 
-            return ResponseEntity.ok(new LoginResponseDto(token));
+            return ResponseEntity.ok(new LoginResponseDto(
+                    token,
+                    user.getUserName(),
+                    user.getUserEmail(),
+                    user.getRole().name()));
 
         } catch (AuthenticationException e) {
             return ResponseEntity.status(401).build();

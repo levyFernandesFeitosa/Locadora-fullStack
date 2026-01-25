@@ -9,18 +9,11 @@ import jakarta.validation.constraints.Size;
 public record UserDto(
         Integer id,
 
-        @NotBlank(message = "O nome é obrigatório")
-        @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres.")
-        String userName,
+        @NotBlank(message = "error.validation.name_required") @Size(min = 3, max = 100, message = "error.validation.name_size_3_100") String userName,
 
-        @NotBlank(message = "O email é obrigatório")
-        @Email(message = "O formato de email é inválido")
-        String userEmail,
+        @NotBlank(message = "error.validation.email_required") @Email(message = "error.validation.email_invalid") String userEmail,
 
-        @NotBlank(message = "A senha é obrigatória")
-        @Size(min = 8, message = "A senha deve ter no mínimo 6 caracteres.")
-        String userPassword,
+        @NotBlank(message = "error.validation.password_required") @Size(min = 8, message = "error.validation.password_size_8") String userPassword,
 
-        @NotNull(message = "O papel do usuário (role) é obrigatório.")
-        Role role) {
+        @NotNull(message = "error.validation.role_required") Role role) {
 }

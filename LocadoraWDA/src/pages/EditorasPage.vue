@@ -24,11 +24,12 @@
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
-            class="CadastroBTN full-width"
+            class="CadastroBTN no-wrap q-px-md"
             :label="$t('PublishersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
+            no-caps
           />
         </div>
 
@@ -38,9 +39,10 @@
             standout
             v-model="pesquisa"
             :label="$t('PublishersPage_search_placeholder')"
+            hide-bottom-space
           >
             <template v-slot:append>
-              <q-icon name="search" />
+              <q-icon name="search" color="white" />
             </template>
           </q-input>
         </div>
@@ -73,7 +75,7 @@
 
       <template v-slot:body="props" v-if="!$q.screen.lt.md">
         <q-tr :props="props">
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+          <q-td v-for="col in props.cols" :key="col.name" :props="props" :class="col.name === 'site' ? 'break-url' : ''">
             {{ col.value }}
           </q-td>
           <q-td v-if="userRole === 'ADMIN'">
@@ -107,7 +109,7 @@
                 <div class="col-5 text-weight-bold text-grey-7">
                   {{ col.label }}:
                 </div>
-                <div class="col-7 text-black">
+                <div class="col-7 text-black" :class="col.name === 'site' ? 'break-url' : ''">
                   {{ col.value }}
                 </div>
               </div>
@@ -135,139 +137,78 @@
         </div>
       </template>
     </q-table>
-    <q-dialog v-model="modalCadastro">
-      <q-card class="modal" style="max-height: 80%; width: 100%">
-        <q-card-section class="conteudoModal">
-          <div class="tituloModal">
-            {{ $t("PublishersPage_modal_register_title") }}
-          </div>
+    
+    <q-dialog v-model="modalAberto">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <div class="tituloModal">
+          {{ editando ? $t("PublishersPage_modal_update_title") : $t("PublishersPage_modal_register_title") }}
+        </div>
+        <q-form ref="formEditora" @submit.prevent="salvarEditora" class="column no-wrap" style="width: 100%; height: 100%">
+          <q-card-section class="conteudoModal scroll">
 
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novaEditora.nome"
-            :label="$t('PublishersPage_input_name_label')"
-            :error="errosCadastro.nome"
-            error-color="negative"
-            @input="validarCampo('nome')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novaEditora.email"
-            :label="$t('PublishersPage_input_email_label')"
-            type="email"
-            :error="errosCadastro.email"
-            error-color="negative"
-            @input="validarCampo('email')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novaEditora.telefone"
-            :label="$t('PublishersPage_input_phone_label')"
-            :error="errosCadastro.telefone"
-            error-color="negative"
-            @input="validarCampo('telefone')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            outlined
-            v-model="novaEditora.site"
-            :label="$t('PublishersPage_input_website_label')"
-            :error="errosCadastro.site"
-            error-color="negative"
-            @input="validarCampo('site')"
-            required
-          />
-        </q-card-section>
-        <q-card-actions class="botoesModal">
-          <q-btn
-            class="modalBTN"
-            :label="$t('PublishersPage_register_button')"
-            color="primary"
-            @click="cadastrarEditora"
-          />
-          <q-btn
-            class="modalBTN"
-            :label="$t('PublishersPage_cancel_button')"
-            @click="modalCadastro = false"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <q-dialog v-model="modalEditar">
-      <q-card class="modal" style="max-height: 80%; width: 100%">
-        <q-card-section class="conteudoModal">
-          <div class="tituloModal">
-            {{ $t("PublishersPage_modal_update_title") }}
-          </div>
-
-          <q-input
-            class="inputModal"
-            v-model="editoraEditar.nome"
-            :label="$t('PublishersPage_input_name_label')"
-            :error="errosEdicao.nome"
-            :error-message="
-              errosEdicao.nome ? $t('PublishersPage_validation_required') : ''
-            "
-            @input="validarCampo('nome', 'edicao')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="editoraEditar.email"
-            :label="$t('PublishersPage_input_email_label')"
-            type="email"
-            :error="errosEdicao.email"
-            :error-message="
-              errosEdicao.email ? $t('PublishersPage_validation_required') : ''
-            "
-            @input="validarCampo('email', 'edicao')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="editoraEditar.telefone"
-            :label="$t('PublishersPage_input_phone_label')"
-            :error="errosEdicao.telefone"
-            :error-message="
-              errosEdicao.telefone
-                ? $t('PublishersPage_validation_required')
-                : ''
-            "
-            @input="validarCampo('telefone', 'edicao')"
-            required
-          />
-          <q-input
-            class="inputModal"
-            v-model="editoraEditar.site"
-            :label="$t('PublishersPage_input_website_label')"
-            :error="errosEdicao.site"
-            :error-message="
-              errosEdicao.site ? $t('PublishersPage_validation_required') : ''
-            "
-            @input="validarCampo('site', 'edicao')"
-            required
-          />
-        </q-card-section>
-        <q-card-actions class="botoesModal">
-          <q-btn
-            class="modalBTN"
-            :label="$t('PublishersPage_update_button')"
-            color="primary"
-            @click="atualizarEditora"
-          />
-          <q-btn
-            class="modalBTN"
-            :label="$t('PublishersPage_close_button')"
-            @click="modalEditar = false"
-          />
-        </q-card-actions>
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="editoraForm.nome"
+                   :label="$t('PublishersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                   lazy-rules
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="editoraForm.email"
+                   :label="$t('PublishersPage_input_email_label') + ' (ex@ex.com)'"
+                   type="email"
+                   :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
+                   lazy-rules
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="editoraForm.telefone"
+                   :label="$t('PublishersPage_input_phone_label') + ' (apenas números)'"
+                   mask="(##) #####-####"
+                   :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
+                   lazy-rules
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="editoraForm.site"
+                   :label="$t('PublishersPage_input_website_label') + ' (URL)'"
+                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                   lazy-rules
+                   hide-bottom-space
+                 />
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-actions class="botoesModal">
+            <q-btn
+              class="modalBTN"
+              :label="editando ? $t('PublishersPage_update_button') : $t('PublishersPage_register_button')"
+              color="primary"
+              type="submit"
+            />
+            <q-btn
+              class="modalBTN"
+              :label="editando ? $t('PublishersPage_close_button') : $t('PublishersPage_cancel_button')"
+              @click="modalAberto = false"
+            />
+          </q-card-actions>
+        </q-form>
       </q-card>
     </q-dialog>
 
@@ -284,7 +225,7 @@
             class="modalBTN"
             :label="$t('PublishersPage_delete_button')"
             color="negative"
-            @click="excluirEditora"
+            @click="executarExclusao"
           />
           <q-btn
             class="modalBTN"
@@ -324,34 +265,21 @@ const { t, locale } = useI18n();
 const allEditoras = ref([]);
 const pesquisa = ref("");
 const isLoading = ref(true);
+const formEditora = ref(null);
 
-const modalCadastro = ref(false);
-const modalEditar = ref(false);
+const modalAberto = ref(false);
+const editando = ref(false);
 const modalExcluir = ref(false);
 
-const novaEditora = ref({
+const editoraForm = ref({
+  id: null,
   nome: "",
   email: "",
   telefone: "",
   site: "",
 });
 
-const editoraEditar = ref({});
-const editoraExcluir = ref({});
-
-const errosCadastro = ref({
-  nome: false,
-  email: false,
-  telefone: false,
-  site: false,
-});
-
-const errosEdicao = ref({
-  nome: false,
-  email: false,
-  telefone: false,
-  site: false,
-});
+const editoraParaExcluir = ref(null);
 
 const columns = computed(() => [
   {
@@ -400,49 +328,6 @@ const editorasFiltradas = computed(() => {
   });
 });
 
-function validarCampo(campo, tipo = "cadastro") {
-  if (tipo === "cadastro") {
-    errosCadastro.value[campo] = false;
-  } else {
-    errosEdicao.value[campo] = false;
-  }
-}
-
-function validarFormularioCadastro() {
-  let valido = true;
-  const campos = ["nome", "email", "telefone", "site"];
-
-  campos.forEach((campo) => {
-    if (!novaEditora.value[campo] || novaEditora.value[campo].trim() === "") {
-      errosCadastro.value[campo] = true;
-      valido = false;
-    } else {
-      errosCadastro.value[campo] = false;
-    }
-  });
-
-  return valido;
-}
-
-function validarFormularioEdicao() {
-  let valido = true;
-  const campos = ["nome", "email", "telefone"];
-
-  campos.forEach((campo) => {
-    if (
-      !editoraEditar.value[campo] ||
-      editoraEditar.value[campo].trim() === ""
-    ) {
-      errosEdicao.value[campo] = true;
-      valido = false;
-    } else {
-      errosEdicao.value[campo] = false;
-    }
-  });
-
-  return valido;
-}
-
 async function carregarEditoras() {
   isLoading.value = true;
   try {
@@ -461,6 +346,16 @@ async function carregarEditoras() {
   }
 }
 
+function limparFormulario() {
+  editoraForm.value = {
+    id: null,
+    nome: "",
+    email: "",
+    telefone: "",
+    site: "",
+  };
+}
+
 function abrirModalCadastro() {
   if (userRole.value === 'USER') {
     $q.notify({
@@ -471,59 +366,9 @@ function abrirModalCadastro() {
     return;
   }
 
-  novaEditora.value = { nome: "", email: "", telefone: "", site: "" };
-  errosCadastro.value = {
-    nome: false,
-    email: false,
-    telefone: false,
-    site: false,
-  };
-  modalCadastro.value = true;
-}
-
-async function cadastrarEditora() {
-  if (userRole.value === 'USER') {
-    $q.notify({
-      type: "negative",
-      message: t("general_error_permission_register"),
-      timeout: 3000
-    });
-    return;
-  }
-
-  if (!validarFormularioCadastro()) {
-    $q.notify({
-      type: "negative",
-      message: t("PublishersPage_validation_fill_all"),
-    });
-    return;
-  }
-
-  try {
-    const dataToSend = {
-      publishersName: novaEditora.value.nome,
-      publishersEmail: novaEditora.value.email,
-      publishersTelephone: novaEditora.value.telefone,
-      publishersSite: novaEditora.value.site,
-    };
-
-    await EditorasService.criar(dataToSend);
-
-    $q.notify({
-      type: "positive",
-      message: t("PublishersPage_success_register"),
-    });
-    modalCadastro.value = false;
-    carregarEditoras();
-  } catch (error) {
-    console.error("Erro no cadastro:", error);
-    $q.notify({
-      type: "negative",
-      message:
-        error.response?.data?.message ||
-        t("PublishersPage_error_register_default"),
-    });
-  }
+  limparFormulario();
+  editando.value = false;
+  modalAberto.value = true;
 }
 
 function editarEditora(editora) {
@@ -536,63 +381,77 @@ function editarEditora(editora) {
     return;
   }
 
-  editoraEditar.value = {
+  editoraForm.value = {
     id: editora.id,
     nome: editora.publishersName,
     email: editora.publishersEmail,
     telefone: editora.publishersTelephone,
     site: editora.publishersSite,
   };
-  errosEdicao.value = {
-    nome: false,
-    email: false,
-    telefone: false,
-    site: false,
-  };
-  modalEditar.value = true;
+  editando.value = true;
+  modalAberto.value = true;
 }
 
-async function atualizarEditora() {
+async function salvarEditora() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general_error_permission_update"),
+      message: editando.value ? t("general_error_permission_update") : t("general_error_permission_register"),
       timeout: 3000
     });
     return;
   }
 
-  if (!validarFormularioEdicao()) {
-    $q.notify({
-      type: "negative",
-      message: t("PublishersPage_validation_fill_all"),
-    });
+  const errors = [];
+  if (!editoraForm.value.nome || editoraForm.value.nome.length < 3) errors.push(t("error.validation.publisher_name_required"));
+  if (!editoraForm.value.email || !/.+@.+\..+/.test(editoraForm.value.email)) errors.push(t("error.validation.email_invalid"));
+  if (!editoraForm.value.telefone || editoraForm.value.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
+  if (!editoraForm.value.site || editoraForm.value.site.length < 3) errors.push(t("error.validation.site_invalid"));
+
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
     return;
   }
 
+  const success = await formEditora.value.validate();
+  if (!success) return;
+
   try {
     const dataToSend = {
-      publishersName: editoraEditar.value.nome,
-      publishersEmail: editoraEditar.value.email,
-      publishersTelephone: editoraEditar.value.telefone,
-      publishersSite: editoraEditar.value.site,
+      publishersName: editoraForm.value.nome,
+      publishersEmail: editoraForm.value.email,
+      publishersTelephone: editoraForm.value.telefone,
+      publishersSite: editoraForm.value.site,
     };
 
-    await EditorasService.atualizar(editoraEditar.value.id, dataToSend);
+    if (editando.value) {
+      await EditorasService.atualizar(editoraForm.value.id, dataToSend);
+      $q.notify({
+        type: "positive",
+        message: t("PublishersPage_success_update"),
+        position: "top"
+      });
+    } else {
+      await EditorasService.criar(dataToSend);
+      $q.notify({
+        type: "positive",
+        message: t("PublishersPage_success_register"),
+        position: "top"
+      });
+    }
 
-    $q.notify({
-      type: "positive",
-      message: t("PublishersPage_success_update"),
-    });
-    modalEditar.value = false;
+    modalAberto.value = false;
     carregarEditoras();
   } catch (error) {
-    console.error("Erro na atualização:", error);
+    console.log("Erro ao salvar editora:", error.response?.data);
+    const apiMsg = error.response?.data?.message;
+    const errorMessage = apiMsg ? t(apiMsg) : (editando.value ? t("PublishersPage_error_update_default") : t("PublishersPage_error_register_default"));
+    
     $q.notify({
       type: "negative",
-      message:
-        error.response?.data?.message ||
-        t("PublishersPage_error_update_default"),
+      message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   }
 }
@@ -606,11 +465,11 @@ function confirmarExcluir(editora) {
     });
     return;
   }
-  editoraExcluir.value = editora;
+  editoraParaExcluir.value = editora;
   modalExcluir.value = true;
 }
 
-async function excluirEditora() {
+async function executarExclusao() {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
@@ -621,7 +480,7 @@ async function excluirEditora() {
   }
 
   try {
-    await EditorasService.deletar(editoraExcluir.value.id);
+    await EditorasService.deletar(editoraParaExcluir.value.id);
 
     $q.notify({
       type: "positive",
@@ -630,18 +489,16 @@ async function excluirEditora() {
     modalExcluir.value = false;
     carregarEditoras();
   } catch (error) {
-    console.error("Erro na exclusão:", error);
-    let errorMessage = t("PublishersPage_error_delete_default");
-
-    if (error.response?.status === 400) {
-      errorMessage = t("PublishersPage_error_delete_linked");
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
+    console.log("Erro na exclusão de editora:", error.response?.data);
+    let errorMessage = error.response?.data?.message || t("PublishersPage_error_delete_default");
+    if (error.response?.status === 409 || (errorMessage && errorMessage.includes("linked"))) {
+      errorMessage = t("error.resource_linked");
     }
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
       timeout: 7000,
     });
   }
@@ -660,3 +517,10 @@ watch(locale, () => {
   });
 });
 </script>
+
+<style scoped>
+.break-url {
+  word-break: break-all;
+  white-space: normal;
+}
+</style>

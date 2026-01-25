@@ -24,11 +24,12 @@
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
-            class="CadastroBTN full-width"
+            class="CadastroBTN no-wrap q-px-md"
             :label="$t('UsersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
+            no-caps
           />
         </div>
 
@@ -38,6 +39,7 @@
             standout
             v-model="pesquisa"
             :label="$t('UsersPage_search_placeholder')"
+            hide-bottom-space
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -81,6 +83,7 @@
           </q-td>
           <q-td v-if="userRole === 'ADMIN'">
             <q-btn
+              v-if="props.row.userEmail !== 'admin@admin.com'"
               dense
               flat
               icon="edit"
@@ -89,7 +92,7 @@
               @click="editarUsuario(props.row)"
             />
             <q-btn
-              v-if="props.row.userEmail !== currentUserEmail"
+              v-if="props.row.userEmail !== currentUserEmail && props.row.userEmail !== 'admin@admin.com'"
               dense
               flat
               icon="delete"
@@ -128,6 +131,7 @@
 
             <q-card-actions align="right" v-if="userRole === 'ADMIN'">
               <q-btn
+                v-if="props.row.userEmail !== 'admin@admin.com'"
                 dense
                 flat
                 icon="edit"
@@ -136,7 +140,7 @@
                 @click="editarUsuario(props.row)"
               />
               <q-btn
-                v-if="props.row.userEmail !== currentUserEmail"
+                v-if="props.row.userEmail !== currentUserEmail && props.row.userEmail !== 'admin@admin.com'"
                 dense
                 flat
                 icon="delete"
@@ -157,47 +161,61 @@
       </template>
     </q-table>
     <q-dialog v-model="modalCadastro">
-      <q-card class="modal">
-        <q-form @submit.prevent="cadastrarUsuario">
-          <q-card-section class="conteudoModal">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="formCadastroRef" @submit.prevent="cadastrarUsuario" class="column no-wrap" style="width: 100%; height: 100%">
+          <q-card-section class="conteudoModal scroll">
             <div class="tituloModal">
               {{ $t("UsersPage_modal_register_title") }}
             </div>
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="novoUsuario.nome"
-              :label="$t('UsersPage_input_name_label')"
-              required
-            />
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="novoUsuario.email"
-              :label="$t('UsersPage_input_email_label')"
-              type="email"
-              required
-            />
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="novoUsuario.senha"
-              :label="$t('UsersPage_input_password_label')"
-              type="password"
-              required
-            />
-            <q-select
-              class="inputModalSelect"
-              outlined
-              v-model="novoUsuario.tipo"
-              :options="roleOptionsComputed"
-              option-value="value"
-              option-label="label"
-              emit-value
-              map-options
-              :label="$t('UsersPage_input_role_label')"
-              required
-            />
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoUsuario.nome"
+                  :label="$t('UsersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoUsuario.email"
+                  :label="$t('UsersPage_input_email_label') + ' (ex@ex.com)'"
+                  type="email"
+                  :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="novoUsuario.senha"
+                   :label="$t('UsersPage_input_password_label') + ' (mín. 8 caracteres)'"
+                   type="password"
+                   :rules="[val => !!val || '', val => val.length >= 8 || '']"
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-select
+                  class="inputModalSelect"
+                  outlined
+                  v-model="novoUsuario.tipo"
+                  :options="roleOptionsComputed"
+                  option-value="value"
+                  option-label="label"
+                  emit-value
+                  map-options
+                  :label="$t('UsersPage_input_role_label') + ' (Selecione)'"
+                  :rules="[val => !!val || '']"
+                  hide-bottom-space
+                />
+              </div>
+            </div>
           </q-card-section>
           <q-card-actions class="botoesModal">
             <q-btn
@@ -217,53 +235,71 @@
     </q-dialog>
 
     <q-dialog v-model="modalEditar">
-      <q-card class="modal">
-        <q-form @submit.prevent="atualizarUsuario">
-          <q-card-section class="conteudoModal">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="formEditarRef" @submit.prevent="atualizarUsuario" class="column no-wrap" style="width: 100%; height: 100%">
+          <q-card-section class="conteudoModal scroll">
             <div class="tituloModal">
               {{ $t("UsersPage_modal_update_title") }}
             </div>
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="usuarioEditar.nome"
-              :label="$t('UsersPage_input_name_label')"
-              required
-            />
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="usuarioEditar.email"
-              :label="$t('UsersPage_input_email_label')"
-              type="email"
-              required
-            />
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="usuarioEditar.senha"
-              :label="$t('UsersPage_input_new_password_label')"
-              type="password"
-            />
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="usuarioEditar.confirmarSenha"
-              :label="$t('UsersPage_input_confirm_password_label')"
-              type="password"
-            />
-            <q-select
-              class="inputModalSelect"
-              outlined
-              v-model="usuarioEditar.tipo"
-              :options="roleOptionsComputed"
-              option-value="value"
-              option-label="label"
-              emit-value
-              map-options
-              :label="$t('UsersPage_input_role_label')"
-              required
-            />
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="usuarioEditar.nome"
+                  :label="$t('UsersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="usuarioEditar.email"
+                  :label="$t('UsersPage_input_email_label') + ' (ex@ex.com)'"
+                  type="email"
+                  :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
+                  hide-bottom-space
+                />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="usuarioEditar.senha"
+                   :label="$t('UsersPage_input_new_password_label') + ' (mín. 8 caracteres)'"
+                   type="password"
+                   :rules="[val => !val || val.length >= 8 || '']"
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="usuarioEditar.confirmarSenha"
+                   :label="$t('UsersPage_input_confirm_password_label')"
+                   type="password"
+                   hide-bottom-space
+                 />
+              </div>
+              <div class="col-12">
+                <q-select
+                  class="inputModalSelect"
+                  outlined
+                  v-model="usuarioEditar.tipo"
+                  :options="roleOptionsComputed"
+                  option-value="value"
+                  option-label="label"
+                  emit-value
+                  map-options
+                  :label="$t('UsersPage_input_role_label') + ' (Selecione)'"
+                  :rules="[val => !!val || '']"
+                  hide-bottom-space
+                />
+              </div>
+            </div>
           </q-card-section>
           <q-card-actions class="botoesModal">
             <q-btn
@@ -355,6 +391,8 @@ const roleOptionsComputed = computed(() => [
 ]);
 
 const allUsers = ref([]);
+const formCadastroRef = ref(null);
+const formEditarRef = ref(null);
 const loading = ref(false);
 
 const pesquisa = ref("");
@@ -424,11 +462,10 @@ async function fetchUsers() {
     const users = await usuarioService.listarUsuarios();
     allUsers.value = users;
   } catch (error) {
+    const errorMsg = error.response?.data?.message || error.message || t("UsersPage_error_load_default");
     $q.notify({
       type: "negative",
-      message:
-        t("UsersPage_error_load_default") +
-        (error.response?.data?.message || t("UsersPage_error_network")),
+      message: errorMsg,
     });
   } finally {
     loading.value = false;
@@ -445,6 +482,20 @@ async function cadastrarUsuario() {
     return;
   }
   
+  const errors = [];
+  if (!novoUsuario.value.nome || novoUsuario.value.nome.length < 3) errors.push(t("error.validation.name_size_3_100"));
+  if (!novoUsuario.value.email || !/.+@.+\..+/.test(novoUsuario.value.email)) errors.push(t("error.validation.email_invalid"));
+  if (!novoUsuario.value.senha || novoUsuario.value.senha.length < 8) errors.push(t("error.validation.password_size_8"));
+  if (!novoUsuario.value.tipo) errors.push(t("error.validation.role_required"));
+
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
+    return;
+  }
+
+  const success = await formCadastroRef.value.validate();
+  if (!success) return;
+
   const { nome, email, senha, tipo } = novoUsuario.value;
 
   if (!nome || !email || !senha) {
@@ -462,21 +513,20 @@ async function cadastrarUsuario() {
 
     await usuarioService.criarUsuario(dados);
 
-    $q.notify({ type: "positive", message: t("UsersPage_success_register") });
+    $q.notify({ type: "positive", message: t("UsersPage_success_register"), position: "top" });
     modalCadastro.value = false;
     resetNovoUsuario();
     await fetchUsers();
   } catch (error) {
-    let errorMessage = t("UsersPage_error_register_default");
-    if (error.response?.status === 403) {
-      errorMessage = t("UsersPage_error_permission_register_backend"); 
-    } else {
-      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
-    }
+    console.log("Erro ao cadastrar usuário:", error.response?.data);
+    let apiMsg = error.response?.data?.message;
+    const errorMessage = apiMsg ? t(apiMsg) : t("UsersPage_error_register_default");
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   }
 }
@@ -514,17 +564,25 @@ async function atualizarUsuario() {
 
   const { id, nome, email, senha, confirmarSenha, tipo } = usuarioEditar.value;
 
+  const errors = [];
+  if (!usuarioEditar.value.nome || usuarioEditar.value.nome.length < 3) errors.push(t("error.validation.name_size_3_100"));
+  if (!usuarioEditar.value.email || !/.+@.+\..+/.test(usuarioEditar.value.email)) errors.push(t("error.validation.email_invalid"));
+  if (usuarioEditar.value.senha && usuarioEditar.value.senha.length < 8) errors.push(t("error.validation.password_size_8"));
+  if (!usuarioEditar.value.tipo) errors.push(t("error.validation.role_required"));
+
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
+    return;
+  }
+
+  const success = await formEditarRef.value.validate();
+  if (!success) return;
+
   if (senha && senha !== confirmarSenha) {
     $q.notify({
       type: "warning",
       message: t("UsersPage_validation_password_mismatch"),
-    });
-    return;
-  }
-  if (!nome || !email) {
-    $q.notify({
-      type: "warning",
-      message: t("UsersPage_validation_name_email_required"),
+      position: "top"
     });
     return;
   }
@@ -542,7 +600,7 @@ async function atualizarUsuario() {
 
     await usuarioService.atualizarUsuario(id, dadosAtualizados);
 
-    $q.notify({ type: "positive", message: t("UsersPage_success_update") });
+    $q.notify({ type: "positive", message: t("UsersPage_success_update"), position: "top" });
     modalEditar.value = false;
 
     const index = allUsers.value.findIndex((u) => u.id === id);
@@ -553,16 +611,15 @@ async function atualizarUsuario() {
       allUsers.value = [...allUsers.value];
     }
   } catch (error) {
-    let errorMessage = t("UsersPage_error_update_default");
-    if (error.response?.status === 403) {
-      errorMessage = t("UsersPage_error_permission_update_backend"); 
-    } else {
-      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
-    }
+    console.log("Erro ao atualizar usuário:", error.response?.data);
+    let apiMsg = error.response?.data?.message;
+    const errorMessage = apiMsg ? t(apiMsg) : t("UsersPage_error_update_default");
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   }
 }
@@ -603,16 +660,19 @@ async function excluirUsuario() {
 
     allUsers.value = allUsers.value.filter((u) => u.id !== user.id);
   } catch (error) {
+    console.log("Erro ao excluir usuário:", error.response?.data);
     let errorMessage = t("UsersPage_error_delete_default");
     if (error.response?.status === 403) {
       errorMessage = t("UsersPage_error_permission_delete_backend"); 
     } else {
-      errorMessage += error.response?.data?.message || t("UsersPage_error_check_console");
+      errorMessage += error.response?.data?.message || error.response?.data?.detail || t("UsersPage_error_check_console");
     }
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   }
 }

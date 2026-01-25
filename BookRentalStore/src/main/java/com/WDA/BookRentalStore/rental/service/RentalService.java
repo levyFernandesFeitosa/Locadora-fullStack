@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 public class RentalService {
     @Autowired
@@ -33,22 +32,23 @@ public class RentalService {
 
     // --- CRUD BÁSICO ---
 
-    public List<Rental> getAll(){
-        return repository.findAll();
+    public List<Rental> getAll() {
+        return repository.findAllByOrderByIdDesc();
     }
 
-    public Rental getById(Integer id){
-        return repository.findById(id).orElseThrow(() -> new RentalNotFoundException("Rental with ID: " + id + " not found"));
+    public Rental getById(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RentalNotFoundException("Rental with ID: " + id + " not found"));
     }
 
-    public void delete(Integer id){
+    public void delete(Integer id) {
         Rental rental = getById(id);
         repository.delete(rental);
     }
 
     // Método 'update' mantido, presumindo que 'RentalDto' é usado para edição
     // de campos como 'rentalDeadline' (data limite), e ele contém o ID.
-    public Rental update(Integer id, RentalDto dto){
+    public Rental update(Integer id, RentalDto dto) {
         Rental existingRental = getById(id);
         // Garante que apenas os campos do DTO sejam copiados (como a data limite)
         BeanUtils.copyProperties(dto, existingRental);
@@ -56,7 +56,7 @@ public class RentalService {
     }
 
     // --- MÉTODO SAVE (CRIAÇÃO) - CORRIGIDO PARA USAR IDS DO RENTALCREATEDTO ---
-    public Rental save (RentalCreateDto dto){
+    public Rental save(RentalCreateDto dto) {
         // 1. Busca os objetos completos a partir dos IDs enviados pelo Frontend
         Renter renter = renterService.getById(dto.renterId());
         Book book = bookService.getById(dto.bookId());
@@ -64,8 +64,9 @@ public class RentalService {
         // 2. Verifica regras de negócio (duplicidade de aluguel)
         Optional<Rental> existingActiveRental = repository.findByRenterAndBookAndStatus(renter, book, Status.rented);
 
-        if (existingActiveRental.isPresent()){
-            throw new RentalBusinessException("O Locatário '" + renter.getRenterName() + "' já possui o livro '" + book.getBookTitle() + "' alugado.");
+        if (existingActiveRental.isPresent()) {
+            throw new RentalBusinessException("O Locatário '" + renter.getRenterName() + "' já possui o livro '"
+                    + book.getBookTitle() + "' alugado.");
         }
 
         // 3. Atualiza o estoque (incrementa o 'bookInUse' do livro em 1)
@@ -90,12 +91,13 @@ public class RentalService {
     }
 
     // --- MÉTODO DE DEVOLUÇÃO - CORRIGIDO PARA ESTOQUE E STATUS ---
-    public Rental returnBook(Integer rentalId){
+    public Rental returnBook(Integer rentalId) {
         Rental rental = getById(rentalId);
 
         // 1. Validação de status (garante que não foi devolvido)
-        if(rental.getStatus() != Status.rented && rental.getStatus() != Status.late){
-            throw new RentalBusinessException("O aluguel ID "+ rentalId + " já foi devolvido e não pode ser alterado.");
+        if (rental.getStatus() != Status.rented && rental.getStatus() != Status.late) {
+            throw new RentalBusinessException(
+                    "O aluguel ID " + rentalId + " já foi devolvido e não pode ser alterado.");
         }
 
         // 2. Atualiza o estoque (decrementa o 'bookInUse' do livro em 1)
@@ -105,15 +107,14 @@ public class RentalService {
         rental.setRentalReturnDate(LocalDate.now());
 
         // 4. Define o status final
-        if (rental.getRentalReturnDate().isAfter(rental.getRentalDeadline())){
+        if (rental.getRentalReturnDate().isAfter(rental.getRentalDeadline())) {
             rental.setStatus(Status.returned_with_delay);
-        } else{
+        } else {
             rental.setStatus(Status.in_time);
         }
 
         // 5. Salva a devolução
         return repository.save(rental);
     }
-
 
 }

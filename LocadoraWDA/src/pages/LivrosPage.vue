@@ -24,11 +24,12 @@
           class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
         >
           <q-btn
-            class="CadastroBTN"
+            class="CadastroBTN no-wrap q-px-md"
             :label="$t('BooksPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
+            no-caps
           />
         </div>
 
@@ -40,9 +41,10 @@
             :label="$t('BooksPage_search_placeholder')"
             debounce="300"
             clearable
+            hide-bottom-space
           >
             <template v-slot:append>
-              <q-icon name="search" />
+              <q-icon name="search" color="white" />
             </template>
           </q-input>
         </div>
@@ -151,9 +153,9 @@
       </template>
     </q-table>
     <q-dialog v-model="modalAberto">
-      <q-card class="modal">
-        <q-form @submit.prevent="salvarLivro" style="width: 100%; height: 90%">
-          <q-card-section class="conteudoModal">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <q-form ref="formLivro" @submit.prevent="salvarLivro" class="column no-wrap" style="width: 100%; height: 100%">
+          <q-card-section class="conteudoModal q-gutter-y-md scroll">
             <div class="tituloModal">
               {{
                 editando
@@ -162,81 +164,104 @@
               }}
             </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="livroForm.bookTitle"
-              :label="$t('BooksPage_input_title_label')"
-              :error="errosCadastro.bookTitle"
-              error-color="negative"
-              @input="validarCampo('bookTitle')"
-            />
+            <div class="row q-col-gutter-y-md">
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="livroForm.bookTitle"
+                  :label="$t('BooksPage_input_title_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              v-model="livroForm.bookAuthor"
-              :label="$t('BooksPage_input_author_label')"
-              :error="errosCadastro.bookAuthor"
-              error-color="negative"
-              @input="validarCampo('bookAuthor')"
-            />
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="livroForm.bookAuthor"
+                  :label="$t('BooksPage_input_author_label') + ' (mín. 3 caracteres)'"
+                  :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              :model-value="formattedLaunchDate"
-              readonly
-              :label="$t('BooksPage_input_launch_date_label')"
-              :error="errosCadastro.bookLaunch"
-              error-color="negative"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date
-                      v-model="livroForm.bookLaunch"
-                      mask="YYYY-MM-DD"
-                      color="primary"
-                      today-btn
-                      @update:model-value="validarCampo('bookLaunch')"
-                    >
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup :label="t('RentersPage_close_button')" color="primary" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model="livroForm.bookLaunch"
+                  mask="##/##/####"
+                  :label="$t('BooksPage_input_launch_date_label') + ' (DD/MM/YYYY)'"
+                  :rules="[val => !!val || '', val => new Date(val.split('/').reverse().join('-')) <= new Date() || '']"
+                  hide-bottom-space
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer" color="white">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date
+                          v-model="livroForm.bookLaunch"
+                          mask="DD/MM/YYYY"
+                          color="primary"
+                          today-btn
+                        >
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup :label="t('RentersPage_close_button')" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
 
-            <q-input
-              class="inputModal"
-              outlined
-              v-model.number="livroForm.bookTotal"
-              :label="$t('BooksPage_input_total_quantity_label')"
-              type="number"
-              min="1"
-              step="1"
-              :error="errosCadastro.bookTotal"
-              error-color="negative"
-              @input="validarCampo('bookTotal')"
-            />
+              <div class="col-12">
+                <q-input
+                  class="inputModal"
+                  outlined
+                  v-model.number="livroForm.bookTotal"
+                  :label="$t('BooksPage_input_total_quantity_label') + ' (Número)'"
+                  type="number"
+                  min="1"
+                  step="1"
+                  :rules="[val => val > 0 || '']"
+                  required
+                  hide-bottom-space
+                />
+              </div>
 
-            <q-select
-              class="inputModalSelect"
-              outlined
-              v-model="livroForm.publisherName"
-              :options="opcoesEditoras"
-              :label="$t('BooksPage_input_publisher_label')"
-              :error="errosCadastro.publisherName"
-              error-color="negative"
-              @update:model-value="validarCampo('publisherName')"
-            />
+              <div class="col-12">
+                <q-select
+                  class="inputModalSelect"
+                  outlined
+                  v-model="livroForm.publisherName"
+                  use-input
+                  fill-input
+                  hide-selected
+                  input-debounce="0"
+                  :options="opcoesFiltradas"
+                  @filter="filterFn"
+                  :label="$t('BooksPage_input_publisher_label') + ' (Selecione)'"
+                  :rules="[val => !!val || '']"
+                  hide-bottom-space
+                >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No results
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+            </div>
           </q-card-section>
           <q-card-actions class="botoesModal">
             <q-btn
@@ -315,9 +340,27 @@ const { t, locale } = useI18n();
 const errosCadastro = ref({});
 
 const livros = ref([]);
+const formLivro = ref(null);
 const carregando = ref(true);
 const termoPesquisa = ref("");
 const opcoesEditoras = ref([]);
+const opcoesFiltradas = ref([]);
+
+function filterFn(val, update) {
+  if (val === '') {
+    update(() => {
+      opcoesFiltradas.value = opcoesEditoras.value;
+    });
+    return;
+  }
+
+  update(() => {
+    const needle = val.toLowerCase();
+    opcoesFiltradas.value = opcoesEditoras.value.filter(
+      v => v.toLowerCase().indexOf(needle) > -1
+    );
+  });
+}
 
 const livroForm = ref({
   id: null,
@@ -461,8 +504,8 @@ async function carregarTudo() {
     console.error("Falha geral ao carregar dados:", error);
     $q.notify({
       type: "negative",
-      message: error.message || t("BooksPage_error_load_default"),
-      caption: error.response?.data?.message || t("BooksPage_error_connection"),
+      message: error.response?.data?.message || error.message || t("BooksPage_error_load_default"),
+      caption: t("BooksPage_error_connection"),
     });
     livros.value = [];
   } finally {
@@ -523,7 +566,7 @@ function abrirModalEdicao(livro) {
     id: livro.id,
     bookTitle: livro.bookTitle,
     bookAuthor: livro.bookAuthor,
-    bookLaunch: launchDateString,
+    bookLaunch: launchDateString ? formatarDataExibicao(launchDateString) : "",
     bookTotal: livro.bookTotal,
     bookInUse: livro.bookInUse,
     publisherName: livro.publisher?.publishersName || "",
@@ -541,68 +584,65 @@ async function salvarLivro() {
     return;
   }
 
-  const isFormValid = validarFormulario();
+  const errors = [];
+  if (!livroForm.value.bookTitle || livroForm.value.bookTitle.length < 3) errors.push(t("error.validation.book_title_required"));
+  if (!livroForm.value.bookAuthor || livroForm.value.bookAuthor.length < 3) errors.push(t("error.validation.author_required"));
+  if (!livroForm.value.bookLaunch) errors.push(t("error.validation.launch_date_required"));
+  if (!livroForm.value.bookTotal || livroForm.value.bookTotal < 1) errors.push(t("error.validation.total_min_1"));
+  if (!livroForm.value.publisherName) errors.push(t("error.validation.publisher_required"));
 
-  const isBookTotalInvalid = livroForm.value.bookTotal !== null && (isNaN(livroForm.value.bookTotal) || livroForm.value.bookTotal < 1);
-
-  if (!isFormValid || isBookTotalInvalid) {
-
-    // 1. Erro de quantidade total (<= 0 ou NaN)
-    if (isBookTotalInvalid) {
-      $q.notify({
-        type: "negative",
-        message: "A quantidade total deve ser um número inteiro maior que zero.",
-      });
-      return;
-    }
-
-    // 2. Erros de campos vazios
-    if (!isFormValid) {
-      $q.notify({
-        type: "warning",
-        message: t("BooksPage_validation_fill_all"),
-      });
-      return;
-    }
-    return; // Garante que não continua se houver erros.
+  if (errors.length > 0) {
+    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
+    return;
   }
+
+  const success = await formLivro.value.validate();
+  if (!success) return;
 
   // 3. Validação de lógica (bookTotal < bookInUse)
   if (editando.value && livroForm.value.bookTotal < livroForm.value.bookInUse) {
     $q.notify({
-      type: "warning",
-      message: `O total de livros (${livroForm.value.bookTotal}) não pode ser menor que a quantidade em uso (${livroForm.value.bookInUse}).`,
+      type: "negative",
+      message: t("error.validation.in_use_exceeds_total") || "O estoque total não pode ser menor que o número de livros em uso.",
+      position: "top",
     });
     return;
   }
 
   salvando.value = true;
 
+  function converterParaISO(dataBR) {
+    if (!dataBR) return null;
+    if (dataBR.includes('-')) return dataBR;
+    const [day, month, year] = dataBR.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
+  const payload = {
+    ...livroForm.value,
+    bookLaunch: converterParaISO(livroForm.value.bookLaunch)
+  };
+
   try {
     if (editando.value) {
-      await LivrosService.atualizar(livroForm.value.id, livroForm.value);
-      $q.notify({ type: "positive", message: t("BooksPage_success_update") });
+      await LivrosService.atualizar(livroForm.value.id, payload);
+      $q.notify({ type: "positive", message: "Livro salvo com sucesso!", position: "top" });
     } else {
       await LivrosService.cadastrar(livroForm.value);
-      $q.notify({ type: "positive", message: t("BooksPage_success_register") });
+      $q.notify({ type: "positive", message: "Livro salvo com sucesso!", position: "top" });
     }
 
     await carregarTudo();
     fecharModal();
   } catch (error) {
-    let errorMessage = t("BooksPage_error_save_default");
-
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.message.includes("Erro de validação:")) {
-        errorMessage = error.message;
-    } else if (error.response?.data?.detail) {
-      errorMessage = error.response.data.detail;
-    }
+    console.log("Erro ao salvar livro:", error.response?.data);
+    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || t("BooksPage_error_save_default");
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   } finally {
     salvando.value = false;
@@ -642,18 +682,19 @@ async function deletarLivroConfirmado() {
     $q.notify({ type: "positive", message: t("BooksPage_success_delete") });
     await carregarTudo();
   } catch (error) {
-    let errorMessage = t("BooksPage_error_delete_default");
+    console.log("Erro ao deletar livro:", error.response?.data);
+    let apiMsg = error.response?.data?.message;
+    let errorMessage = apiMsg ? t(apiMsg) : t("BooksPage_error_delete_default");
 
-    if (error.response?.status === 400) {
-      // Caso o livro esteja em uso
-      errorMessage = t("BooksPage_error_delete_linked");
-    } else if (error.response?.data?.detail) {
-      errorMessage = error.response.data.detail;
+    if (error.response?.status === 409 || (apiMsg && typeof apiMsg === 'string' && apiMsg.includes("linked"))) {
+      errorMessage = t("error.resource_linked");
     }
 
     $q.notify({
       type: "negative",
       message: errorMessage,
+      position: "top",
+      timeout: 5000,
     });
   } finally {
     carregando.value = false;
