@@ -280,6 +280,17 @@ export default {
   validation_invalid_cpf: 'CPF inválido (deve ter 11 dígitos).',
   validation_positive_number: 'Deve ser um número positivo.',
   validation_launch_date_past: 'A data não pode ser futura.',
+
+  // General Labels/Suffixes
+  general_min_3_chars: ' (mín. 3 caracteres)',
+  general_number: ' (Número)',
+  general_select: ' (Selecione)',
+  general_email_format: ' (ex@ex.com)',
+  general_phone_format: ' (apenas números)',
+  general_cpf_format: ' (###.###.###-##)',
+  general_not_found: 'Não encontrado',
+  general_success_delete: 'Excluído com sucesso!',
+
   // ForgotPasswordPage
   forgot_title: "Recuperar Senha",
   forgot_instruction: "Digite seu e-mail para receber as instruções de redefinição de senha.",
@@ -320,6 +331,9 @@ export default {
   'error.validation.total_min_1': 'O estoque total deve ser no mínimo 1.',
   'error.validation.in_use_negative': 'O número de cópias em uso não pode ser negativo.',
   'error.validation.publisher_required': 'A editora é obrigatória.',
+  'error.validation.book_required': 'O livro é obrigatório.',
+  'error.validation.renter_required': 'O locatário é obrigatório.',
+  'error.validation.deadline_required': 'A data de devolução é obrigatória.',
   'error.validation.name_required': 'O nome é obrigatório.',
   'error.validation.password_required': 'A senha é obrigatória.',
   'error.validation.password_size_8': 'A senha deve ter no mínimo 8 caracteres.',
@@ -333,4 +347,6 @@ export default {
   'error.permission_denied': 'Você não tem permissão para realizar esta ação.',
   'error.resource_linked': 'Não é possível excluir este registro pois ele possui dependências vinculadas.',
   'general_success_save': 'Salvo com sucesso!',
-}
+  'alerts.rental_already_exists': 'Este locatário já possui um aluguel ativo deste livro.',
+  'alerts.cpf_already_exists': 'Este CPF já está cadastrado para outro locatário.',
+};

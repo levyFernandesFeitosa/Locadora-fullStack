@@ -1,40 +1,57 @@
 <template>
   <q-page class="q-pa-md" style="background-color: #edead0">
+    <!-- Top Section (Identical to LivrosPage) -->
     <div
-      class="q-pa-md example-row-column-width"
+      class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-sm flex-md-row flex-column">
-        <div class="col-grow col-md-6 order-xs-2 order-md-1">
+      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+        <!-- Título -->
+        <div class="col col-sm-auto">
           <div class="titulo flex items-center">
-            <q-icon name="event" size="32px" class="q-mr-sm" color="primary" />
+            <q-icon
+              name="event"
+              size="32px"
+              class="q-mr-sm"
+              color="primary"
+            />
             <span class="text-white text-weight-bold ellipsis">{{
               $t("RentalsPage_title")
             }}</span>
           </div>
         </div>
 
-        <div
-          v-if="userRole === 'ADMIN'"
-          class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
-        >
+        <!-- Espaçador no Desktop -->
+        <q-space class="gt-xs" />
+
+        <!-- Botão de Cadastrar -->
+        <div class="col-auto">
           <q-btn
-            class="CadastroBTN no-wrap q-px-md"
+            v-if="userRole === 'ADMIN'"
+            class="CadastroBTN no-wrap q-px-md q-mb-none"
+            style="height: 40px"
             :label="$t('RentalsPage_register_button')"
             color="primary"
             @click="openCreateModal"
-            icon="person_add"
+            icon="event_available"
             no-caps
+            unelevated
           />
         </div>
 
-        <div class="col-12 col-md-4 order-xs-1 order-md-3">
+        <!-- Barra de Pesquisa -->
+        <div class="col-12 col-sm-auto">
           <q-input
-            class="pesquisaALL"
-            standout
+            class="pesquisaALL rounded-borders q-mt-none"
+            outlined
             v-model="searchTerm"
             :label="$t('RentalsPage_search_placeholder')"
+            debounce="300"
+            clearable
+            dense
+            bg-color="white"
             hide-bottom-space
+            style="min-width: 300px; height: 40px; margin: 0 !important;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -44,22 +61,22 @@
       </div>
     </div>
 
+    <!-- Rentals Table -->
     <q-table
       :rows="alugueis"
       :columns="columns"
       row-key="id"
       :grid="$q.screen.lt.md"
       :hide-header="$q.screen.lt.md"
-      :rows-per-page-options="[5, 10, 15, 0]"
+      :rows-per-page-options="[5, 10, 20, 0]"
       :pagination="{
-        sortBy: 'id',
-        descending: true,
         page: 1,
         rowsPerPage: $q.screen.lt.md ? 0 : 5,
       }"
       :hide-pagination="$q.screen.lt.md"
-      :filter="searchTerm"
       :loading="loading"
+      :filter="searchTerm"
+      :filter-method="customFilter"
     >
       <template v-slot:header="props" v-if="!$q.screen.lt.md">
         <q-tr :props="props" class="linha-destacada">
@@ -97,18 +114,15 @@
               dense
               flat
               icon="library_add_check"
-              color="green"
-              :tooltip="$t('RentalsPage_tooltip_receive')"
+              color="positive"
               @click="confirmarRecebimento(props.row)"
             />
-            
             <q-btn
               v-if="isRentalActive(props.row)"
               dense
               flat
               icon="edit"
               color="primary"
-              :tooltip="$t('RentalsPage_tooltip_edit')"
               @click="openEditModal(props.row)"
             />
           </q-td>
@@ -152,24 +166,22 @@
             <q-separator />
 
             <q-card-actions align="right" v-if="userRole === 'ADMIN'">
-               <q-btn
-                 v-if="isRentalActive(props.row)"
-                 dense
-                 flat
-                 icon="library_add_check"
-                 color="green"
-                 :tooltip="$t('RentalsPage_tooltip_receive')"
-                 @click="confirmarRecebimento(props.row)"
-               />
-               <q-btn
-                 v-if="isRentalActive(props.row)"
-                 dense
-                 flat
-                 icon="edit"
-                 color="primary"
-                 :tooltip="$t('RentalsPage_tooltip_edit')"
-                 @click="openEditModal(props.row)"
-               />
+              <q-btn
+                v-if="isRentalActive(props.row)"
+                dense
+                flat
+                icon="library_add_check"
+                color="positive"
+                @click="confirmarRecebimento(props.row)"
+              />
+              <q-btn
+                v-if="isRentalActive(props.row)"
+                dense
+                flat
+                icon="edit"
+                color="primary"
+                @click="openEditModal(props.row)"
+              />
             </q-card-actions>
           </q-card>
         </div>
@@ -184,6 +196,7 @@
       </template>
     </q-table>
 
+    <!-- Modal for Create/Edit (Identical structure to LivrosPage) -->
     <q-dialog v-model="modalAberto">
       <q-card class="modal column no-wrap" style="max-height: 90vh;">
         <q-form ref="aluguelFormRef" @submit.prevent="salvarAluguel" class="column no-wrap" style="width: 100%; height: 100%">
@@ -197,6 +210,7 @@
             </div>
 
             <div class="row q-col-gutter-y-md">
+              <!-- Renter Select -->
               <div class="col-12">
                 <q-select
                   class="inputModalSelect"
@@ -205,28 +219,29 @@
                   use-input
                   fill-input
                   hide-selected
-                  input-debounce="0"
+                  input-debounce="300"
                   :options="locatariosOptionsFiltrados"
                   @filter="filterFnRenters"
                   option-value="value"
                   option-label="label"
                   emit-value
                   map-options
-                  :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
-                  :rules="[val => !!val || '']"
+                  :label="$t('RentersPage_input_name_label') + $t('general_min_3_chars')"
+                  :rules="[val => !!val || $t('validation_required')]"
                   :disable="editando"
                   hide-bottom-space
                 >
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey">
-                        No results
+                         {{ $t('general_not_found') }}
                       </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
               </div>
 
+              <!-- Book Select -->
               <div class="col-12">
                 <q-select
                   class="inputModalSelect"
@@ -235,15 +250,15 @@
                   use-input
                   fill-input
                   hide-selected
-                  input-debounce="0"
+                  input-debounce="300"
                   :options="livrosOptionsFiltrados"
                   @filter="filterFnBooks"
                   option-value="value"
                   option-label="label"
                   emit-value
                   map-options
-                  :label="$t('RentalsPage_input_book_label') + ' (Selecione)'"
-                  :rules="[val => !!val || '']"
+                  :label="$t('RentalsPage_input_book_label') + $t('general_select')"
+                  :rules="[val => !!val || $t('validation_required')]"
                   :disable="editando"
                   hide-bottom-space
                 >
@@ -261,55 +276,22 @@
                   <template v-slot:no-option>
                     <q-item>
                       <q-item-section class="text-grey">
-                        No results
+                        {{ $t('general_not_found') }}
                       </q-item-section>
                     </q-item>
                   </template>
                 </q-select>
               </div>
 
+              <!-- Deadline Date -->
               <div class="col-12">
                 <q-input
                   class="inputModal"
                   outlined
-                  v-model="aluguelForm.rentDate"
-                  mask="##/##/####"
-                  :label="$t('RentalsPage_input_rent_date_label') + ' (DD/MM/YYYY)'"
-                  :rules="[val => !!val || '']"
-                  :disable="editando"
-                  hide-bottom-space
-                >
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer" v-if="!editando" color="white">
-                      <q-popup-proxy
-                        cover
-                        transition-show="scale"
-                        transition-hide="scale"
-                      >
-                        <q-date
-                          v-model="aluguelForm.rentDate"
-                          mask="DD/MM/YYYY"
-                          color="primary"
-                          today-btn
-                        >
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup :label="$t('RentersPage_close_button')" color="primary" flat />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
-              </div>
-
-              <div class="col-12">
-                <q-input
-                  class="inputModal"
-                  outlined
-                  v-model="aluguelForm.deadLine"
-                  mask="##/##/####"
-                  :label="$t('RentalsPage_input_deadline_label') + ' (DD/MM/YYYY)'"
-                  :rules="[val => !!val || '', val => new Date(val.split('/').reverse().join('-')) >= new Date(aluguelForm.rentDate.split('/').reverse().join('-')) || '']"
+                  v-model="deadLineDisplay"
+                  :mask="maskPorIdioma"
+                  :label="labelPrazo"
+                  :rules="[val => !!val || $t('validation_required'), val => compData(val, aluguelForm.rentDate) || $t('RentalsPage_validation_fill_all')]"
                   hide-bottom-space
                 >
                   <template v-slot:append>
@@ -320,8 +302,8 @@
                         transition-hide="scale"
                       >
                         <q-date
-                          v-model="aluguelForm.deadLine"
-                          mask="DD/MM/YYYY"
+                          v-model="deadLineDisplay"
+                          :mask="formatVisual"
                           color="primary"
                           today-btn
                         >
@@ -336,7 +318,6 @@
               </div>
             </div>
           </q-card-section>
-
           <q-card-actions class="botoesModal">
             <q-btn
               class="modalBTN"
@@ -359,58 +340,45 @@
       </q-card>
     </q-dialog>
 
-    <!-- NOVO MODAL DE DEVOLUÇÃO -->
-    <q-dialog v-model="modalDevolucaoAberto" persistent>
-      <q-card style="min-width: 350px; border-radius: 15px">
-        <q-card-section class="row items-center q-pb-none" style="background-color: #0056b3; color: white">
-          <div class="text-h6">{{ $t('RentalsPage_confirm_receive_title') }}</div>
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-
-        <q-card-section class="q-pa-md">
-          <div class="row items-center q-mb-md">
-            <q-icon name="menu_book" size="md" color="primary" class="q-mr-sm" />
-            <div>
-              <div class="text-caption text-grey-7">{{ $t('RentalsPage_column_book') }}</div>
-              <div class="text-subtitle1 text-weight-bold">{{ rentalParaDevolucao?.book?.bookTitle }}</div>
+    <!-- Return Confirmation Modal (Restored design) -->
+    <q-dialog v-model="modalDevolucaoAberto">
+      <q-card class="modal column no-wrap" style="max-height: 90vh;">
+        <div class="tituloModal">
+          {{ $t('RentalsPage_confirm_receive_title') }}
+        </div>
+        
+        <q-card-section class="conteudoModal scroll q-gutter-y-md">
+          <div class="text-center">
+            <div class="row items-center justify-center q-mb-md">
+              <q-icon name="menu_book" size="md" color="primary" class="q-mr-md" />
+              <span class="text-h5 text-white text-weight-bold">{{ rentalParaDevolucao?.book?.bookTitle }}</span>
             </div>
-          </div>
 
-          <div class="row items-center q-mb-md">
-            <q-icon name="calendar_today" size="md" color="primary" class="q-mr-sm" />
-            <div>
-              <div class="text-caption text-grey-7">{{ $t('RentalsPage_column_deadline') }}</div>
-              <div class="text-subtitle1">{{ formatarData(rentalParaDevolucao?.rentalDeadline) }}</div>
+            <div class="row items-center justify-center">
+              <q-badge 
+                :color="isDevolucaoAtrasada ? 'negative' : 'positive'" 
+                class="q-pa-md text-subtitle1"
+                style="border-radius: 1vh"
+              >
+                <q-icon :name="isDevolucaoAtrasada ? 'warning' : 'check_circle'" class="q-mr-sm" size="24px" />
+                {{ isDevolucaoAtrasada ? $t('RentalsPage_status_delivered_with_delay') : $t('RentalsPage_status_delivered_on_time') }}
+              </q-badge>
             </div>
-          </div>
-
-          <div class="row justify-center q-mt-lg">
-            <q-badge 
-              :color="isDevolucaoAtrasada ? 'negative' : 'positive'" 
-              class="q-pa-sm text-subtitle2"
-              rounded
-            >
-              <q-icon :name="isDevolucaoAtrasada ? 'warning' : 'check_circle'" class="q-mr-xs" />
-              {{ isDevolucaoAtrasada ? $t('RentalsPage_status_delivered_with_delay') : $t('RentalsPage_status_delivered_on_time') }}
-            </q-badge>
           </div>
         </q-card-section>
 
-        <q-separator />
-
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn 
-            flat 
-            :label="$t('RentalsPage_cancel_button')" 
-            color="primary" 
-            v-close-popup 
-          />
-          <q-btn 
-            :label="$t('RentalsPage_confirm_button')" 
-            color="primary" 
-            @click="executarRecebimento" 
+        <q-card-actions class="botoesModal">
+          <q-btn
+            class="modalBTN"
+            :label="$t('RentalsPage_confirm_button')"
+            color="primary"
+            @click="executarRecebimento"
             :loading="recebendo"
+          />
+          <q-btn
+            class="modalBTN"
+            :label="$t('RentalsPage_cancel_button')"
+            @click="modalDevolucaoAberto = false"
           />
         </q-card-actions>
       </q-card>
@@ -419,7 +387,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useQuasar, date } from "quasar";
 import { useI18n } from "vue-i18n";
 import AlugueisService from "src/services/alugueisService";
@@ -430,24 +398,30 @@ function getCurrentUserRole() {
     try {
       const role = JSON.parse(userInfo).role;
       return role ? String(role).trim().toUpperCase() : null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
   return null;
 }
 
 const userRole = ref(getCurrentUserRole());
-
 const $q = useQuasar();
 const { t, locale } = useI18n(); 
 
-const statusMap = computed(() => ({
-  rented: t("RentalsPage_status_rented"),
-  late: t("RentalsPage_status_late"),
-  in_time: t("RentalsPage_status_in_time"),
-  returned_with_delay: t("RentalsPage_status_delivered_with_delay"), 
-}));
+const maskPorIdioma = computed(() => '##/##/####');
+const formatVisual = computed(() => locale.value === 'pt-BR' ? 'DD/MM/YYYY' : 'MM/DD/YYYY');
+const labelPrazo = computed(() => t('RentalsPage_input_deadline_label') + ' (' + formatVisual.value + ')');
+
+function compData(displayVal, isoVal) {
+   if (!displayVal || !isoVal) return true;
+   const iso1 = converterParaISO(displayVal);
+   return iso1 >= isoVal;
+}
+
+function converterParaISO(visualVal) {
+   if (!visualVal) return null;
+   const dateObj = date.extractDate(visualVal, formatVisual.value);
+   return date.formatDate(dateObj, 'YYYY-MM-DD');
+}
 
 const alugueis = ref([]);
 const aluguelFormRef = ref(null);
@@ -456,36 +430,6 @@ const locatariosOptions = ref([]);
 const locatariosOptionsFiltrados = ref([]);
 const livrosOptions = ref([]);
 const livrosOptionsFiltrados = ref([]);
-
-function filterFnRenters(val, update) {
-  if (val === '') {
-    update(() => {
-      locatariosOptionsFiltrados.value = locatariosOptions.value;
-    });
-    return;
-  }
-  update(() => {
-    const needle = val.toLowerCase();
-    locatariosOptionsFiltrados.value = locatariosOptions.value.filter(
-      v => v.label.toLowerCase().indexOf(needle) > -1
-    );
-  });
-}
-
-function filterFnBooks(val, update) {
-  if (val === '') {
-    update(() => {
-      livrosOptionsFiltrados.value = livrosOptions.value;
-    });
-    return;
-  }
-  update(() => {
-    const needle = val.toLowerCase();
-    livrosOptionsFiltrados.value = livrosOptions.value.filter(
-      v => v.label.toLowerCase().indexOf(needle) > -1
-    );
-  });
-}
 
 const aluguelForm = ref({
   id: null,
@@ -498,128 +442,122 @@ const aluguelForm = ref({
 const modalAberto = ref(false);
 const editando = ref(false);
 const salvando = ref(false);
-const errosCadastro = ref({});
 const searchTerm = ref("");
 
+function filterFnRenters(val, update) {
+  if (val.length < 3) {
+    update(() => { locatariosOptionsFiltrados.value = locatariosOptions.value; });
+    return;
+  }
+  update(() => {
+    const needle = val.toLowerCase();
+    locatariosOptionsFiltrados.value = locatariosOptions.value.filter(
+      v => v.label.toLowerCase().includes(needle)
+    );
+  });
+}
+
+function filterFnBooks(val, update) {
+  if (val === '') {
+    update(() => { livrosOptionsFiltrados.value = livrosOptions.value; });
+    return;
+  }
+  update(() => {
+    const needle = val.toLowerCase();
+    livrosOptionsFiltrados.value = livrosOptions.value.filter(
+      v => v.label.toLowerCase().includes(needle)
+    );
+  });
+}
+
+function customFilter(rows, terms, cols, getCellValue) {
+   if (!terms) return rows;
+   const lowerTerms = terms.toLowerCase();
+   
+   return rows.filter(row => {
+     const name = row.renter?.renterName?.toLowerCase() || "";
+     if (name.includes(lowerTerms)) return true;
+
+     const phone = row.renter?.renterTelephone || "";
+     const phoneClean = phone.replace(/\D/g, "");
+     const termClean = lowerTerms.replace(/\D/g, "");
+     if (phoneClean.includes(termClean) && termClean.length > 0) return true;
+
+     const rentDateFormatted = formatarData(row.rentalRentedDate).toLowerCase();
+     const deadlineFormatted = formatarData(row.rentalDeadline).toLowerCase();
+     const returnDateFormatted = formatarData(row.rentalReturnDate).toLowerCase();
+     if (rentDateFormatted.includes(lowerTerms)) return true;
+     if (deadlineFormatted.includes(lowerTerms)) return true;
+     if (returnDateFormatted.includes(lowerTerms)) return true;
+
+     const email = row.renter?.renterEmail?.toLowerCase() || "";
+     if (email.includes(lowerTerms)) return true;
+
+     const statusLabel = getStatusLabel(row).toLowerCase();
+     if (statusLabel.includes(lowerTerms)) return true;
+
+     return false;
+   });
+}
+
 const columns = computed(() => [
-  {
-    name: "locatario",
-    label: t("RentalsPage_column_renter"),
-    align: "left",
-    field: (row) => row.renter?.renterName || t("RentalsPage_not_applicable_short"),
-    sortable: true,
-  },
-  {
-    name: "livro",
-    label: t("RentalsPage_column_book"),
-    align: "left",
-    field: (row) => row.book?.bookTitle || t("RentalsPage_not_applicable_short"), 
-    sortable: true,
-  },
-  {
-    name: "rentalRentedDate", 
-    label: t("RentalsPage_column_rent_date"),
-    align: "left",
-    field: "rentalRentedDate", 
-    sortable: true,
-  },
-  {
-    name: "rentalDeadline", 
-    label: t("RentalsPage_column_deadline"),
-    align: "left",
-    field: "rentalDeadline", 
-    sortable: true,
-  },
-  {
-    name: "rentalReturnDate", 
-    label: t("RentalsPage_column_devolution_date"),
-    align: "left",
-    field: "rentalReturnDate", 
-    sortable: true,
-  },
-  {
-    name: "status",
-    label: t("RentalsPage_column_status"),
-    align: "left",
-    field: "status",
-    sortable: true,
-  },
+  { name: "locatario", label: t("RentalsPage_column_renter"), align: "left", field: (row) => row.renter?.renterName || "-", sortable: true },
+  { name: "livro", label: t("RentalsPage_column_book"), align: "left", field: (row) => row.book?.bookTitle || "-", sortable: true },
+  { name: "rentalRentedDate", label: t("RentalsPage_column_rent_date"), align: "center", field: "rentalRentedDate", sortable: true },
+  { name: "rentalDeadline", label: t("RentalsPage_column_deadline"), align: "center", field: "rentalDeadline", sortable: true },
+  { name: "rentalReturnDate", label: t("RentalsPage_column_devolution_date"), align: "center", field: "rentalReturnDate", sortable: true },
+  { name: "status", label: t("RentalsPage_column_status"), align: "left", field: "status", sortable: true }
 ]);
+
+const deadLineDisplay = computed({
+  get() {
+    if (!aluguelForm.value.deadLine) return "";
+    if (aluguelForm.value.deadLine.includes('/') && locale.value === 'pt-BR') return aluguelForm.value.deadLine;
+    const dateObj = date.extractDate(aluguelForm.value.deadLine, 'YYYY-MM-DD');
+    return date.formatDate(dateObj, formatVisual.value);
+  },
+  set(val) {
+    if (val && (val.length === formatVisual.value.length || val.includes('-'))) {
+       if (val.includes('-') && val.length === 10) { aluguelForm.value.deadLine = val; }
+       else {
+          const dateObj = date.extractDate(val, formatVisual.value);
+          aluguelForm.value.deadLine = date.formatDate(dateObj, 'YYYY-MM-DD');
+       }
+    } else if (!val) { aluguelForm.value.deadLine = null; }
+  }
+});
 
 function formatarData(dataISO) {
   if (!dataISO) return "";
-  
-  let dateObj;
-  
-  if (dataISO.includes('/')) {
-    // Caso venha da máscara DD/MM/YYYY
-    const [day, month, year] = dataISO.split('/').map(Number);
-    dateObj = new Date(year, month - 1, day);
-  } else {
-    // Caso venha do banco YYYY-MM-DD
-    const dateStr = String(dataISO).substring(0, 10);
-    if (dateStr === "undefined" || dateStr === "null" || dateStr === "") {
-      return "";
-    }
-    const [year, month, day] = dateStr.split('-').map(Number);
-    dateObj = new Date(year, month - 1, day);
-  }
-
-  if (isNaN(dateObj.getTime())) return "";
-
-  const format = locale.value.startsWith("en") ? "MM/DD/YYYY" : "DD/MM/YYYY";
-  return date.formatDate(dateObj, format);
+  const dateStr = String(dataISO).substring(0, 10);
+  if (dateStr === "undefined" || dateStr === "null" || dateStr === "") return "";
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const dateObj = new Date(year, month - 1, day);
+  return isNaN(dateObj.getTime()) ? "" : date.formatDate(dateObj, formatVisual.value);
 }
 
-const formattedRentDate = computed(() => {
-  return aluguelForm.value.rentDate ? formatarData(aluguelForm.value.rentDate) : "";
-});
-
-const formattedDeadLine = computed(() => {
-  return aluguelForm.value.deadLine ? formatarData(aluguelForm.value.deadLine) : "";
-});
-
-// --- LÓGICA DE STATUS REFINADA ---
 const today = new Date().toISOString().substring(0, 10);
 
-function getInternalStatus(row) {
+function getStatusLabel(row) {
   const status = row.status?.toLowerCase();
   const deadline = row.rentalDeadline?.substring(0, 10);
-  const returnDate = row.rentalReturnDate?.substring(0, 10);
-
-  // Se já foi devolvido
-  if (status === 'in_time') return 'ON_TIME';
-  if (status === 'returned_with_delay') return 'LATE_RETURN';
-
-  // Se ainda está alugado, calculamos o status dinamicamente
+  if (status === 'in_time') return t('RentalsPage_status_delivered_on_time');
+  if (status === 'returned_with_delay') return t('RentalsPage_status_delivered_with_delay');
   if (status === 'rented' || status === 'late') {
-    if (deadline < today) return 'ACTIVE_LATE';
-    return 'ACTIVE_ON_TIME';
+    return deadline < today ? t('RentalsPage_status_late') : t('RentalsPage_status_in_time');
   }
-
-  return 'UNKNOWN';
-}
-
-function getStatusLabel(row) {
-  const internalStatus = getInternalStatus(row);
-  const labels = {
-    'ACTIVE_LATE': t('RentalsPage_status_late'),
-    'LATE_RETURN': t('RentalsPage_status_delivered_with_delay'),
-    'ACTIVE_ON_TIME': t('RentalsPage_status_in_time'),
-    'ON_TIME': t('RentalsPage_status_delivered_on_time')
-  };
-  return labels[internalStatus] || t('RentalsPage_not_applicable_short');
+  return "-";
 }
 
 function getStatusColor(row) {
-  const internalStatus = getInternalStatus(row);
-  const colors = {
-    'ACTIVE_LATE': 'negative', // Vermelho
-    'LATE_RETURN': 'orange-8', // Amarelo/Laranja (para destaque)
-    'ACTIVE_ON_TIME': 'positive', // Verde
-    'ON_TIME': 'blue-8' // Azul
-  };
-  return colors[internalStatus] || 'grey-7';
+  const status = row.status?.toLowerCase();
+  const deadline = row.rentalDeadline?.substring(0, 10);
+  if (status === 'in_time') return 'blue-8';
+  if (status === 'returned_with_delay') return 'orange-8';
+  if (status === 'rented' || status === 'late') {
+    return deadline < today ? 'negative' : 'positive';
+  }
+  return 'grey-7';
 }
 
 function isRentalActive(row) {
@@ -627,212 +565,162 @@ function isRentalActive(row) {
   return status === 'rented' || status === 'late';
 }
 
-function limparFormulario() {
-  aluguelForm.value = {
-    id: null, renterId: null, bookId: null, rentDate: null, deadLine: null, 
-  };
-  errosCadastro.value = {};
-}
-
-function fecharModal() { modalAberto.value = false; limparFormulario(); }
-
-function openCreateModal() { 
-  if (userRole.value === 'USER') {
-    $q.notify({
-      type: "negative",
-      message: t("general_error_permission_register"), // Assumindo que você tem uma chave de erro geral
-      timeout: 3000
-    });
-    return;
-  }
-  editando.value = false; 
-  limparFormulario(); 
-  modalAberto.value = true; 
-}
-
-function validarCampo(campo) {
-  if (
-    !aluguelForm.value[campo] ||
-    aluguelForm.value[campo].toString().trim() === ""
-  ) {
-    errosCadastro.value[campo] = true;
-  } else {
-    delete errosCadastro.value[campo];
-  }
-}
-
-function validarFormulario() {
-  errosCadastro.value = {};
-  let valido = true;
-  const camposObrigatorios = ["renterId", "bookId", "deadLine"]; 
-  camposObrigatorios.forEach((campo) => {
-    if (!aluguelForm.value[campo]) {
-      errosCadastro.value[campo] = true;
-      valido = false;
-    }
-  });
-  return valido;
-}
-
-async function fetchAllData() {
+async function carregarAlugueis() {
   loading.value = true;
   try {
-    alugueis.value = await AlugueisService.getAllAlugueis();
-
-    const dependencies = await AlugueisService.getDependencies();
-
-    locatariosOptions.value = dependencies.locatarios.map((r) => ({
-      label: r.renterName,
-      value: r.id,
-    }));
-
-    livrosOptions.value = dependencies.livros.map((b) => ({
-      label: b.bookTitle,
-      value: b.id,
-      totalAvailable: b.bookTotal - b.bookInUse,
-    }));
+    const data = await AlugueisService.getAllAlugueis();
+    alugueis.value = data;
   } catch (error) {
-    const errorMessage = error.response?.data?.message || error.message || t("RentalsPage_error_load_default");
-    $q.notify({ type: "negative", message: errorMessage });
-  } finally {
-    loading.value = false;
-  }
+    const msg = error.response?.data?.message || t("RentalsPage_error_load_default");
+    $q.notify({ type: "negative", message: msg });
+  } finally { loading.value = false; }
 }
 
+async function carregarAuxiliares() {
+  try {
+    const deps = await AlugueisService.getDependencies();
+    locatariosOptions.value = deps.locatarios.map(l => ({ label: l.renterName, value: l.id }));
+    livrosOptions.value = deps.livros.map(b => ({ 
+      label: b.bookTitle, 
+      value: b.id,
+      totalAvailable: b.bookTotalQuantity - b.bookRentedQuantity
+    }));
+    locatariosOptionsFiltrados.value = locatariosOptions.value;
+    livrosOptionsFiltrados.value = livrosOptions.value;
+  } catch (error) { console.error("Erro ao carregar dependências", error); }
+}
 
-function openEditModal(aluguel) {
-  if (userRole.value === 'USER') {
-    $q.notify({
-      type: "negative",
-      message: t("general_error_permission_update"), // Assumindo que você tem uma chave de erro geral
-      timeout: 3000
-    });
-    return;
-  }
+function openCreateModal() { 
+  editando.value = false; 
+  aluguelForm.value = { id: null, renterId: null, bookId: null, rentDate: today, deadLine: null };
+  modalAberto.value = true;
+}
 
+function openEditModal(row) {
   editando.value = true;
-  errosCadastro.value = {};
   aluguelForm.value = {
-    id: aluguel.id,
-    renterId: aluguel.renter?.id || null, 
-    bookId: aluguel.book?.id || null, 
-    rentDate: aluguel.rentalRentedDate ? formatarData(aluguel.rentalRentedDate) : null,
-    deadLine: aluguel.rentalDeadline ? formatarData(aluguel.rentalDeadline) : null,
+    id: row.id,
+    renterId: row.renter?.id,
+    bookId: row.book?.id,
+    rentDate: row.rentalRentedDate?.substring(0, 10),
+    deadLine: row.rentalDeadline?.substring(0, 10),
   };
   modalAberto.value = true;
 }
 
+function fecharModal() { modalAberto.value = false; }
+
 async function salvarAluguel() {
-  if (userRole.value === 'USER') {
-    $q.notify({
-      type: "negative",
-      message: editando.value ? t("general_error_permission_update") : t("general_error_permission_register"),
-      timeout: 3000
-    });
-    return;
-  }
-
-  const errors = [];
-  if (!aluguelForm.value.renterId) errors.push(t("RentalsPage_input_renter_label") + " " + t("validation_required"));
-  if (!aluguelForm.value.bookId) errors.push(t("RentalsPage_input_book_label") + " " + t("validation_required"));
-  if (!aluguelForm.value.deadLine) errors.push(t("RentalsPage_input_deadline_label") + " " + t("validation_required"));
-
-  if (errors.length > 0) {
-    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
-    return;
-  }
-
   const success = await aluguelFormRef.value.validate();
   if (!success) return;
-
   salvando.value = true;
   
-  function converterParaISO(dataBR) {
-    if (!dataBR) return null;
-    if (dataBR.includes('-')) return dataBR;
-    const [day, month, year] = dataBR.split('/');
-    return `${year}-${month}-${day}`;
+  let payload;
+  if (editando.value) {
+    payload = {
+      id: aluguelForm.value.id,
+      renterId: aluguelForm.value.renterId,
+      bookId: aluguelForm.value.bookId,
+      rentalDeadline: aluguelForm.value.deadLine
+    };
+  } else {
+    payload = {
+      renterId: aluguelForm.value.renterId,
+      bookId: aluguelForm.value.bookId,
+      rentalRentedDate: today, // Garante data de hoje no formato YYYY-MM-DD
+      rentalDeadline: aluguelForm.value.deadLine
+    };
   }
 
-  const dataToSend = {
-    id: aluguelForm.value.id, 
-    renterId: aluguelForm.value.renterId,
-    bookId: aluguelForm.value.bookId,
-    rentalRentedDate: converterParaISO(aluguelForm.value.rentDate), 
-    rentalDeadline: converterParaISO(aluguelForm.value.deadLine), 
-  };
+  console.log('Dados enviados:', payload);
 
   try {
     if (editando.value) {
-      await AlugueisService.updateAluguel(aluguelForm.value.id, dataToSend);
-      $q.notify({ type: "positive", message: t("RentalsPage_success_update"), position: "top" });
+      await AlugueisService.updateAluguel(aluguelForm.value.id, payload);
+      $q.notify({ type: "positive", message: t("RentalsPage_success_update") });
     } else {
-      await AlugueisService.createAluguel(dataToSend);
-      $q.notify({ type: "positive", message: t("RentalsPage_success_register"), position: "top" });
+      await AlugueisService.createAluguel(payload);
+      $q.notify({ type: "positive", message: t("RentalsPage_success_register") });
     }
-
-    await fetchAllData();
     fecharModal();
+    carregarAlugueis();
   } catch (error) {
-    console.log("Erro ao salvar aluguel:", error.response?.data);
-    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || t("RentalsPage_error_save_default");
-    $q.notify({ 
-      type: "negative", 
-      message: errorMessage,
-      position: "top",
-      timeout: 5000
-    });
-  } finally {
-    salvando.value = false;
-  }
+    console.error('Erro ao salvar aluguel:', error.response?.data || error);
+    let msg = t("RentalsPage_error_save_default");
+    const apiMsg = error.response?.data?.message;
+    
+    // Trata erro de duplicidade com chave de tradução conforme solicitado
+    if (error.response?.status === 409 || (apiMsg && apiMsg.includes("possu"))) {
+      msg = t('alerts.rental_already_exists');
+    } else if (apiMsg) {
+      msg = t(apiMsg);
+    }
+    
+    $q.notify({ type: "negative", message: msg });
+  } finally { salvando.value = false; }
 }
 
 const modalDevolucaoAberto = ref(false);
 const rentalParaDevolucao = ref(null);
 const recebendo = ref(false);
-
 const isDevolucaoAtrasada = computed(() => {
   if (!rentalParaDevolucao.value) return false;
-  const deadline = rentalParaDevolucao.value.rentalDeadline?.substring(0, 10);
-  return today > deadline;
+  return (rentalParaDevolucao.value.rentalDeadline?.substring(0, 10)) < today;
 });
 
-function confirmarRecebimento(aluguel) {
-  if (userRole.value === 'USER') {
-    $q.notify({ type: "negative", message: t("general_error_permission_update") });
-    return;
-  }
-  rentalParaDevolucao.value = aluguel;
+function confirmarRecebimento(row) {
+  rentalParaDevolucao.value = row;
   modalDevolucaoAberto.value = true;
 }
 
 async function executarRecebimento() {
-  if (!rentalParaDevolucao.value) return;
-  
   recebendo.value = true;
   try {
     await AlugueisService.returnBook(rentalParaDevolucao.value.id);
     $q.notify({ type: "positive", message: t("RentalsPage_success_receive") });
-    await fetchAllData();
     modalDevolucaoAberto.value = false;
+    carregarAlugueis();
   } catch (error) {
-    let errorMessage = t("RentalsPage_error_receive_default");
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    }
-    $q.notify({ type: "negative", message: errorMessage });
-  } finally {
-    recebendo.value = false;
-  }
+    const msg = error.response?.data?.message || t("RentalsPage_error_receive_default");
+    $q.notify({ type: "negative", message: msg });
+  } finally { recebendo.value = false; }
 }
 
 onMounted(() => {
-  console.log('Role atual (AlugueisPage):', userRole.value);
-  fetchAllData();
-});
-
-watch(locale, () => {
-  fetchAllData(); 
-  $q.notify({ type: "info", message: t("general_language_updated"), timeout: 1000 });
+  carregarAlugueis();
+  carregarAuxiliares();
 });
 </script>
+
+<style scoped>
+/* Força o alinhamento central absoluto e altura igual */
+.CadastroBTN, 
+.pesquisaALL {
+  height: 40px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove a margem interna que o Quasar coloca no controle do input */
+:deep(.pesquisaALL .q-field__control) {
+  height: 40px !important;
+  margin-top: 0 !important;
+}
+
+/* Ajusta o texto do botão para não cortar */
+.CadastroBTN {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Garante que o input herde a altura correta do container dense */
+.pesquisaALL :deep(.q-field__native),
+.pesquisaALL :deep(.q-field__prefix),
+.pesquisaALL :deep(.q-field__suffix),
+.pesquisaALL :deep(.q-field__input) {
+  min-height: 40px !important;
+}
+</style>
+
+

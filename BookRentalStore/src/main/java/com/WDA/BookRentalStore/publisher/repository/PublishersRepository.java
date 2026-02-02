@@ -9,6 +9,11 @@ import java.util.Optional;
 
 public interface PublishersRepository extends JpaRepository<Publishers, Integer> {
     Optional<Publishers> findByPublishersName(String publishersName);
+
     List<Publishers> findAllByOrderByIdDesc();
+
+    Optional<Publishers> findByPublishersSite(String publishersSite);
+
     Optional<Publishers> findByPublishersEmail(String publishersEmail);
+
 }

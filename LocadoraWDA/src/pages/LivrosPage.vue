@@ -1,11 +1,12 @@
 <template>
   <q-page class="q-pa-md" style="background-color: #edead0">
     <div
-      class="q-pa-md example-row-column-width"
+      class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-sm flex-md-row flex-column">
-        <div class="col-grow col-md-6 order-xs-2 order-md-1">
+      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+        <!-- Título -->
+        <div class="col col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="menu_book"
@@ -19,32 +20,40 @@
           </div>
         </div>
 
-        <div
-          v-if="userRole === 'ADMIN'"
-          class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
-        >
+        <!-- Espaçador no Desktop -->
+        <q-space class="gt-xs" />
+
+        <!-- Botão de Cadastrar -->
+        <div class="col-auto">
           <q-btn
-            class="CadastroBTN no-wrap q-px-md"
+            v-if="userRole === 'ADMIN'"
+            class="CadastroBTN no-wrap q-px-md q-mb-none"
+            style="height: 40px"
             :label="$t('BooksPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
-            icon="person_add"
+            icon="add"
             no-caps
+            unelevated
           />
         </div>
 
-        <div class="col-12 col-md-4 order-xs-1 order-md-3">
+        <!-- Barra de Pesquisa -->
+        <div class="col-12 col-sm-auto">
           <q-input
-            class="pesquisaALL"
-            standout
+            class="pesquisaALL rounded-borders q-mt-none"
+            outlined
             v-model="termoPesquisa"
             :label="$t('BooksPage_search_placeholder')"
             debounce="300"
             clearable
+            dense
+            bg-color="white"
             hide-bottom-space
+            style="min-width: 300px; height: 40px; margin: 0 !important;"
           >
             <template v-slot:append>
-              <q-icon name="search" color="white" />
+              <q-icon name="search" />
             </template>
           </q-input>
         </div>
@@ -64,6 +73,7 @@
       :hide-pagination="$q.screen.lt.md"
       :loading="carregando"
       :filter="termoPesquisa"
+      :filter-method="customFilter"
     >
       <template v-slot:header="props" v-if="!$q.screen.lt.md">
         <q-tr :props="props" class="linha-destacada">
@@ -170,7 +180,7 @@
                   class="inputModal"
                   outlined
                   v-model="livroForm.bookTitle"
-                  :label="$t('BooksPage_input_title_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('BooksPage_input_title_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   required
                   hide-bottom-space
@@ -182,7 +192,7 @@
                   class="inputModal"
                   outlined
                   v-model="livroForm.bookAuthor"
-                  :label="$t('BooksPage_input_author_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('BooksPage_input_author_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   required
                   hide-bottom-space
@@ -193,9 +203,9 @@
                 <q-input
                   class="inputModal"
                   outlined
-                  v-model="livroForm.bookLaunch"
-                  mask="##/##/####"
-                  :label="$t('BooksPage_input_launch_date_label') + ' (DD/MM/YYYY)'"
+                  v-model="bookLaunchDisplay"
+                  :mask="dateMask"
+                  :label="$t('BooksPage_input_launch_date_label') + ' (' + dateMask + ')'"
                   :rules="[val => !!val || '', val => new Date(val.split('/').reverse().join('-')) <= new Date() || '']"
                   hide-bottom-space
                 >
@@ -207,8 +217,8 @@
                         transition-hide="scale"
                       >
                         <q-date
-                          v-model="livroForm.bookLaunch"
-                          mask="DD/MM/YYYY"
+                          v-model="bookLaunchProxy"
+                          mask="YYYY-MM-DD"
                           color="primary"
                           today-btn
                         >
@@ -227,7 +237,7 @@
                   class="inputModal"
                   outlined
                   v-model.number="livroForm.bookTotal"
-                  :label="$t('BooksPage_input_total_quantity_label') + ' (Número)'"
+                  :label="$t('BooksPage_input_total_quantity_label') + $t('general_number')"
                   type="number"
                   min="1"
                   step="1"
@@ -248,7 +258,7 @@
                   input-debounce="0"
                   :options="opcoesFiltradas"
                   @filter="filterFn"
-                  :label="$t('BooksPage_input_publisher_label') + ' (Selecione)'"
+                  :label="$t('BooksPage_input_publisher_label') + $t('general_select')"
                   :rules="[val => !!val || '']"
                   hide-bottom-space
                 >
@@ -342,7 +352,30 @@ const errosCadastro = ref({});
 const livros = ref([]);
 const formLivro = ref(null);
 const carregando = ref(true);
+const termClean = ref("");
 const termoPesquisa = ref("");
+
+function customFilter(rows, terms, cols, getCellValue) {
+  if (!terms) return rows;
+  const lowerTerms = terms.toLowerCase();
+
+  return rows.filter(row => {
+    // Title
+    if (row.bookTitle?.toLowerCase().includes(lowerTerms)) return true;
+    
+    // Author
+    if (row.bookAuthor?.toLowerCase().includes(lowerTerms)) return true;
+
+    // Publisher
+    if (row.publisher?.publishersName?.toLowerCase().includes(lowerTerms)) return true;
+
+    // Launch Date (Formatted)
+    const formattedDate = formatarDataExibicao(row.bookLaunch);
+    if (formattedDate.includes(lowerTerms)) return true;
+
+    return false;
+  });
+}
 const opcoesEditoras = ref([]);
 const opcoesFiltradas = ref([]);
 
@@ -442,6 +475,43 @@ const columns = computed(() => [
     sortable: true,
   },
 ]);
+
+// --- PROXY COMPUTADO PARA DATAS (ISO <-> LOCALE) ---
+
+const dateMask = computed(() => {
+  return locale.value.startsWith("en") ? "MM/DD/YYYY" : "DD/MM/YYYY";
+});
+
+// Helper para converter de ISO (YYYY-MM-DD) para Locale (DD/MM/YYYY)
+function isoToLocale(isoDate) {
+  if (!isoDate) return "";
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const dateObj = new Date(year, month - 1, day);
+  return date.formatDate(dateObj, dateMask.value);
+}
+
+const bookLaunchDisplay = computed({
+  get() {
+    return isoToLocale(livroForm.value.bookLaunch);
+  },
+  set(val) {
+    if (val && val.length === dateMask.value.length) {
+       const dateObj = date.extractDate(val, dateMask.value);
+       livroForm.value.bookLaunch = date.formatDate(dateObj, 'YYYY-MM-DD');
+    } else {
+       if (!val) livroForm.value.bookLaunch = null;
+    }
+  }
+});
+
+const bookLaunchProxy = computed({
+  get() { 
+      return livroForm.value.bookLaunch ? livroForm.value.bookLaunch : ""; 
+  },
+  set(val) {
+      livroForm.value.bookLaunch = val; 
+  }
+});
 
 const validarCampo = (campo) => {
   const valor = livroForm.value[campo];
@@ -566,7 +636,7 @@ function abrirModalEdicao(livro) {
     id: livro.id,
     bookTitle: livro.bookTitle,
     bookAuthor: livro.bookAuthor,
-    bookLaunch: launchDateString ? formatarDataExibicao(launchDateString) : "",
+    bookLaunch: launchDateString, // JÁ VEM YYYY-MM-DD
     bookTotal: livro.bookTotal,
     bookInUse: livro.bookInUse,
     publisherName: livro.publisher?.publishersName || "",
@@ -611,25 +681,18 @@ async function salvarLivro() {
 
   salvando.value = true;
 
-  function converterParaISO(dataBR) {
-    if (!dataBR) return null;
-    if (dataBR.includes('-')) return dataBR;
-    const [day, month, year] = dataBR.split('/');
-    return `${year}-${month}-${day}`;
-  }
-
   const payload = {
     ...livroForm.value,
-    bookLaunch: converterParaISO(livroForm.value.bookLaunch)
+    // bookLaunch já está em YYYY-MM-DD (ISO) no form
   };
 
   try {
     if (editando.value) {
       await LivrosService.atualizar(livroForm.value.id, payload);
-      $q.notify({ type: "positive", message: "Livro salvo com sucesso!", position: "top" });
+      $q.notify({ type: "positive", message: t("BooksPage_success_update"), position: "top" });
     } else {
       await LivrosService.cadastrar(livroForm.value);
-      $q.notify({ type: "positive", message: "Livro salvo com sucesso!", position: "top" });
+      $q.notify({ type: "positive", message: t("BooksPage_success_register"), position: "top" });
     }
 
     await carregarTudo();
@@ -714,3 +777,34 @@ watch(locale, () => {
   });
 });
 </script>
+
+<style scoped>
+/* Força o alinhamento central absoluto e altura igual */
+.CadastroBTN,
+.pesquisaALL {
+  height: 40px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove a margem interna que o Quasar coloca no controle do input */
+:deep(.pesquisaALL .q-field__control) {
+  height: 40px !important;
+  margin-top: 0 !important;
+}
+
+/* Ajusta o texto do botão para não cortar */
+.CadastroBTN {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Garante que o input herde a altura correta do container dense */
+.pesquisaALL :deep(.q-field__native),
+.pesquisaALL :deep(.q-field__prefix),
+.pesquisaALL :deep(.q-field__suffix),
+.pesquisaALL :deep(.q-field__input) {
+  min-height: 40px !important;
+}
+</style>

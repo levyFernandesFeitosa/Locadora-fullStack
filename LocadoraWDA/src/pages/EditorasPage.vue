@@ -1,11 +1,12 @@
 <template>
   <q-page class="q-pa-md" style="background-color: #edead0">
     <div
-      class="q-pa-md example-row-column-width"
+      class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-sm flex-md-row flex-column">
-        <div class="col-grow col-md-6 order-xs-2 order-md-1">
+      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+        <!-- Título -->
+        <div class="col col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="library_books"
@@ -19,30 +20,40 @@
           </div>
         </div>
 
-        <div
-          v-if="userRole === 'ADMIN'"
-          class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
-        >
+        <!-- Espaçador no Desktop -->
+        <q-space class="gt-xs" />
+
+        <!-- Botão de Cadastrar -->
+        <div class="col-auto">
           <q-btn
-            class="CadastroBTN no-wrap q-px-md"
+            v-if="userRole === 'ADMIN'"
+            class="CadastroBTN no-wrap q-px-md q-mb-none"
+            style="height: 40px"
             :label="$t('PublishersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
-            icon="person_add"
+            icon="add"
             no-caps
+            unelevated
           />
         </div>
 
-        <div class="col-12 col-md-4 order-xs-1 order-md-3">
+        <!-- Barra de Pesquisa -->
+        <div class="col-12 col-sm-auto">
           <q-input
-            class="pesquisaALL"
-            standout
+            class="pesquisaALL rounded-borders q-mt-none"
+            outlined
             v-model="pesquisa"
             :label="$t('PublishersPage_search_placeholder')"
+            debounce="300"
+            clearable
+            dense
+            bg-color="white"
             hide-bottom-space
+            style="min-width: 300px; height: 40px; margin: 0 !important;"
           >
             <template v-slot:append>
-              <q-icon name="search" color="white" />
+              <q-icon name="search" />
             </template>
           </q-input>
         </div>
@@ -152,7 +163,7 @@
                   class="inputModal"
                   outlined
                   v-model="editoraForm.nome"
-                   :label="$t('PublishersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                   :label="$t('PublishersPage_input_name_label') + $t('general_min_3_chars')"
                    :rules="[val => !!val || '', val => val.length >= 3 || '']"
                    lazy-rules
                    hide-bottom-space
@@ -163,7 +174,7 @@
                   class="inputModal"
                   outlined
                   v-model="editoraForm.email"
-                   :label="$t('PublishersPage_input_email_label') + ' (ex@ex.com)'"
+                   :label="$t('PublishersPage_input_email_label') + $t('general_email_format')"
                    type="email"
                    :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
                    lazy-rules
@@ -175,7 +186,7 @@
                   class="inputModal"
                   outlined
                   v-model="editoraForm.telefone"
-                   :label="$t('PublishersPage_input_phone_label') + ' (apenas números)'"
+                   :label="$t('PublishersPage_input_phone_label') + $t('general_phone_format')"
                    mask="(##) #####-####"
                    :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
                    lazy-rules
@@ -188,7 +199,11 @@
                   outlined
                   v-model="editoraForm.site"
                    :label="$t('PublishersPage_input_website_label') + ' (URL)'"
-                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
+                   :rules="[
+                     val => !!val || '', 
+                     val => val.length >= 3 || '',
+                     val => /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(val) || $t('error.validation.site_invalid_format')
+                   ]"
                    lazy-rules
                    hide-bottom-space
                  />
@@ -493,6 +508,8 @@ async function executarExclusao() {
     let errorMessage = error.response?.data?.message || t("PublishersPage_error_delete_default");
     if (error.response?.status === 409 || (errorMessage && errorMessage.includes("linked"))) {
       errorMessage = t("error.resource_linked");
+    } else if (errorMessage === "error.conflict_site") {
+      errorMessage = t("error.conflict_site");
     }
 
     $q.notify({
@@ -522,5 +539,34 @@ watch(locale, () => {
 .break-url {
   word-break: break-all;
   white-space: normal;
+}
+
+/* Força o alinhamento central absoluto e altura igual */
+.CadastroBTN,
+.pesquisaALL {
+  height: 40px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove a margem interna que o Quasar coloca no controle do input */
+:deep(.pesquisaALL .q-field__control) {
+  height: 40px !important;
+  margin-top: 0 !important;
+}
+
+/* Ajusta o texto do botão para não cortar */
+.CadastroBTN {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Garante que o input herde a altura correta do container dense */
+.pesquisaALL :deep(.q-field__native),
+.pesquisaALL :deep(.q-field__prefix),
+.pesquisaALL :deep(.q-field__suffix),
+.pesquisaALL :deep(.q-field__input) {
+  min-height: 40px !important;
 }
 </style>

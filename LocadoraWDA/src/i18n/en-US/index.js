@@ -278,6 +278,17 @@ export default {
   validation_invalid_cpf: 'Invalid CPF (must be 11 digits).',
   validation_positive_number: 'Must be a positive number.',
   validation_launch_date_past: 'Date cannot be in the future.',
+
+  // General Labels/Suffixes
+  general_min_3_chars: ' (min. 3 characters)',
+  general_number: ' (Number)',
+  general_select: ' (Select)',
+  general_email_format: ' (ex@ex.com)',
+  general_phone_format: ' (numbers only)',
+  general_cpf_format: ' (###.###.###-##)',
+  general_not_found: 'Not found',
+  general_success_delete: 'Successfully deleted!',
+
   // ForgotPasswordPage
   forgot_title: "Recover Password",
   forgot_instruction: "Enter your email to receive password reset instructions.",
@@ -316,7 +327,10 @@ export default {
   'error.validation.launch_date_past': 'Launch date cannot be in the future.',
   'error.validation.total_quantity_required': 'Total stock is required.',
   'error.validation.total_min_1': 'Total stock must be at least 1.',
-  'error.validation.in_use_negative': 'Number of copies in use cannot be negative.',
+  'error.validation.in_use_negative': 'The number of copies in use cannot be negative.',
+  'error.validation.book_required': 'Book is required.',
+  'error.validation.renter_required': 'Renter is required.',
+  'error.validation.deadline_required': 'Return date is required.',
   'error.validation.publisher_required': 'Publisher is required.',
   'error.validation.name_required': 'Name is required.',
   'error.validation.password_required': 'Password is required.',
@@ -330,5 +344,7 @@ export default {
   'error.already_exists': 'This record already exists in the system.',
   'error.permission_denied': 'You do not have permission to perform this action.',
   'error.resource_linked': 'Cannot delete this record as it has linked dependencies.',
-  'general_success_save': 'Successfully saved!',
+  general_success_save: 'Successfully saved!',
+  'alerts.rental_already_exists': 'This renter already has an active rental for this book.',
+  'alerts.cpf_already_exists': 'This CPF is already registered for another renter.',
 };

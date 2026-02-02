@@ -42,6 +42,9 @@ public class PublishersService {
             throw new PublishersAlreadyExistsException("error.conflict_email");
         }
         if (dto.publishersSite() != null && !dto.publishersSite().isBlank()) {
+            if (repository.findByPublishersSite(dto.publishersSite()).isPresent()) {
+                throw new PublishersAlreadyExistsException("error.conflict_site");
+            }
             validatePublisherSite(dto.publishersSite());
         }
 
@@ -67,6 +70,10 @@ public class PublishersService {
         }
 
         if (dto.publishersSite() != null && !dto.publishersSite().isBlank()) {
+            Optional<Publishers> publisherWithSameSite = repository.findByPublishersSite(dto.publishersSite());
+            if (publisherWithSameSite.isPresent() && !publisherWithSameSite.get().getId().equals(id)) {
+                throw new PublishersAlreadyExistsException("error.conflict_site");
+            }
             validatePublisherSite(dto.publishersSite());
         }
 

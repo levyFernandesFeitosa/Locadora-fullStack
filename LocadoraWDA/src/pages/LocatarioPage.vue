@@ -1,11 +1,12 @@
 <template>
   <q-page class="q-pa-md" style="background-color: #edead0">
     <div
-      class="q-pa-md example-row-column-width"
+      class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-sm flex-md-row flex-column">
-        <div class="col-grow col-md-6 order-xs-2 order-md-1">
+      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+        <!-- Título -->
+        <div class="col col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon name="people" size="32px" class="q-mr-sm" color="primary" />
             <span class=" text-white text-weight-bold ellipsis">{{
@@ -14,30 +15,40 @@
           </div>
         </div>
 
-        <div
-          v-if="userRole === 'ADMIN'"
-          class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
-        >
+        <!-- Espaçador no Desktop -->
+        <q-space class="gt-xs" />
+
+        <!-- Botão de Cadastrar -->
+        <div class="col-auto">
           <q-btn
-            class="CadastroBTN no-wrap q-px-lg"
+            v-if="userRole === 'ADMIN'"
+            class="CadastroBTN no-wrap q-px-md q-mb-none"
+            style="height: 40px"
             :label="$t('RentersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
             no-caps
+            unelevated
           />
         </div>
 
-        <div class="col-12 col-md-4 order-xs-1 order-md-3">
+        <!-- Barra de Pesquisa -->
+        <div class="col-12 col-sm-auto">
           <q-input
-            class="pesquisaALL"
-            standout
+            class="pesquisaALL rounded-borders q-mt-none"
+            outlined
             v-model="pesquisa"
             :label="$t('RentersPage_search_placeholder')"
+            debounce="300"
+            clearable
+            dense
+            bg-color="white"
             hide-bottom-space
+            style="min-width: 300px; height: 40px; margin: 0 !important;"
           >
             <template v-slot:append>
-              <q-icon name="search" color="white" />
+              <q-icon name="search" />
             </template>
           </q-input>
         </div>
@@ -142,7 +153,7 @@
 
     <q-dialog v-model="modalCadastro">
       <q-card class="modal column no-wrap" style="max-height: 90vh;">
-        <q-form ref="formCadastro" @submit.prevent="cadastrarLocatario" class="column no-wrap" style="width: 100%; height: 100%">
+        <q-form ref="formCadastro" @submit.prevent="salvarLocatario(false)" class="column no-wrap" style="width: 100%; height: 100%">
           <div class="tituloModal">
             {{ $t("RentersPage_modal_register_title") }}
           </div>
@@ -153,7 +164,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoLocatario.nome"
-                  :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('RentersPage_input_name_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   required
                   hide-bottom-space
@@ -164,7 +175,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoLocatario.email"
-                  :label="$t('RentersPage_input_email_label') + ' (ex@ex.com)'"
+                  :label="$t('RentersPage_input_email_label') + $t('general_email_format')"
                   type="email"
                   :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
                   required
@@ -176,7 +187,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoLocatario.telefone"
-                  :label="$t('RentersPage_input_phone_label') + ' (apenas números)'"
+                  :label="$t('RentersPage_input_phone_label') + $t('general_phone_format')"
                   mask="(##) #####-####"
                   :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
                   required
@@ -188,7 +199,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoLocatario.cpf"
-                  :label="$t('RentersPage_input_cpf_label') + ' (###.###.###-##)'"
+                  :label="$t('RentersPage_input_cpf_label') + $t('general_cpf_format')"
                   mask="###.###.###-##"
                   :rules="[val => !!val || '', val => val.length === 14 || '']"
                   required
@@ -200,7 +211,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoLocatario.endereco"
-                  :label="$t('RentersPage_input_address_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('RentersPage_input_address_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   required
                   hide-bottom-space
@@ -228,7 +239,7 @@
 
     <q-dialog v-model="modalEditar">
       <q-card class="modal column no-wrap" style="max-height: 90vh;">
-        <q-form ref="formEditar" @submit.prevent="atualizarLocatario" class="column no-wrap" style="width: 100%; height: 100%">
+        <q-form ref="formEditar" @submit.prevent="salvarLocatario(true)" class="column no-wrap" style="width: 100%; height: 100%">
           <div class="tituloModal">
             {{ $t("RentersPage_modal_update_title") }}
           </div>
@@ -238,7 +249,7 @@
                 <q-input
                   class="inputModal"
                    v-model="locatarioEditar.nome"
-                   :label="$t('RentersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                   :label="$t('RentersPage_input_name_label') + $t('general_min_3_chars')"
                    :rules="[val => !!val || '', val => val.length >= 3 || '']"
                    required
                    hide-bottom-space
@@ -248,7 +259,7 @@
                 <q-input
                   class="inputModal"
                    v-model="locatarioEditar.email"
-                   :label="$t('RentersPage_input_email_label') + ' (ex@ex.com)'"
+                   :label="$t('RentersPage_input_email_label') + $t('general_email_format')"
                    type="email"
                    :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
                    required
@@ -259,7 +270,7 @@
                 <q-input
                   class="inputModal"
                    v-model="locatarioEditar.telefone"
-                   :label="$t('RentersPage_input_phone_label') + ' (apenas números)'"
+                   :label="$t('RentersPage_input_phone_label') + $t('general_phone_format')"
                    mask="(##) #####-####"
                    :rules="[val => !!val || '', val => val.replace(/\D/g, '').length >= 10 || '']"
                    required
@@ -270,7 +281,7 @@
                 <q-input
                   class="inputModal"
                    v-model="locatarioEditar.cpf"
-                   :label="$t('RentersPage_input_cpf_label') + ' (###.###.###-##)'"
+                   :label="$t('RentersPage_input_cpf_label') + $t('general_cpf_format')"
                    mask="###.###.###-##"
                    :rules="[val => !!val || '', val => val.length === 14 || '']"
                    required
@@ -281,7 +292,7 @@
                 <q-input
                   class="inputModal"
                    v-model="locatarioEditar.endereco"
-                   :label="$t('RentersPage_input_address_label') + ' (mín. 3 caracteres)'"
+                   :label="$t('RentersPage_input_address_label') + $t('general_min_3_chars')"
                    :rules="[val => !!val || '', val => val.length >= 3 || '']"
                    required
                    hide-bottom-space
@@ -497,110 +508,63 @@ const fetchLocatarios = async () => {
   }
 };
 
-const cadastrarLocatario = async () => {
+const salvarLocatario = async (isEdit = false) => {
   if (userRole.value === 'USER') {
     $q.notify({
       type: "negative",
-      message: t("general_error_permission_register"),
+      message: isEdit ? t("general_error_permission_update") : t("general_error_permission_register"),
       timeout: 3000
     });
     return;
   }
 
+  const form = isEdit ? locatarioEditar.value : novoLocatario.value;
+  const formRef = isEdit ? formEditar.value : formCadastro.value;
+
   const errors = [];
-  if (!novoLocatario.value.nome || novoLocatario.value.nome.length < 3) errors.push(t("error.validation.renter_name_required"));
-  if (!novoLocatario.value.email || !/.+@.+\..+/.test(novoLocatario.value.email)) errors.push(t("error.validation.email_invalid"));
-  if (!novoLocatario.value.telefone || novoLocatario.value.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
-  if (!novoLocatario.value.cpf || novoLocatario.value.cpf.replace(/\D/g, '').length < 11) errors.push(t("error.validation.cpf_size"));
-  if (!novoLocatario.value.endereco || novoLocatario.value.endereco.length < 3) errors.push(t("error.validation.address_required"));
+  if (!form.nome || form.nome.length < 3) errors.push(t("error.validation.renter_name_required"));
+  if (!form.email || !/.+@.+\..+/.test(form.email)) errors.push(t("error.validation.email_invalid"));
+  if (!form.telefone || form.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
+  if (!form.cpf || form.cpf.replace(/\D/g, '').length < 11) errors.push(t("error.validation.cpf_size"));
+  if (!form.endereco || form.endereco.length < 3) errors.push(t("error.validation.address_required"));
 
   if (errors.length > 0) {
     errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
     return;
   }
 
-  const success = await formCadastro.value.validate();
+  const success = await formRef.validate();
   if (!success) return;
 
   const dataAPI = {
-    renterName: novoLocatario.value.nome,
-    renterEmail: novoLocatario.value.email,
-    renterTelephone: novoLocatario.value.telefone,
-    renterCpf: novoLocatario.value.cpf.replace(/\D/g, ''),
-    renterAddress: novoLocatario.value.endereco,
+    id: isEdit ? form.id : undefined,
+    renterName: form.nome,
+    renterEmail: form.email,
+    renterTelephone: form.telefone,
+    renterCpf: form.cpf.replace(/\D/g, ''),
+    renterAddress: form.endereco,
   };
 
   try {
-    await locatarioService.create(dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage_success_register"), position: "top" });
-    modalCadastro.value = false;
+    if (isEdit) {
+      await locatarioService.update(form.id, dataAPI);
+      $q.notify({ type: "positive", message: t("RentersPage_success_update"), position: "top" });
+      modalEditar.value = false;
+    } else {
+      await locatarioService.create(dataAPI);
+      $q.notify({ type: "positive", message: t("RentersPage_success_register"), position: "top" });
+      modalCadastro.value = false;
+    }
     fetchLocatarios();
   } catch (error) {
-    console.log("Erro no cadastro de locatário:", error.response?.data);
+    console.log("Erro ao salvar locatário:", error.response?.data);
     const apiMsg = error.response?.data?.message;
-    const errorMessage = apiMsg ? t(apiMsg) : t("RentersPage_error_load_default");
+    let errorMessage = apiMsg ? t(apiMsg) : (isEdit ? t("RentersPage_error_update_default") : t("RentersPage_error_load_default"));
     
-    $q.notify({
-      type: "negative",
-      message: errorMessage,
-      position: "top",
-      timeout: 5000,
-    });
-  }
-};
-
-const atualizarLocatario = async () => {
-  if (userRole.value === 'USER') {
-    $q.notify({
-      type: "negative",
-      message: t("general_error_permission_update"),
-      timeout: 3000
-    });
-    return;
-  }
-
-  const errors = [];
-  if (!locatarioEditar.value.nome || locatarioEditar.value.nome.length < 3) errors.push(t("error.validation.renter_name_required"));
-  if (!locatarioEditar.value.email || !/.+@.+\..+/.test(locatarioEditar.value.email)) errors.push(t("error.validation.email_invalid"));
-  if (!locatarioEditar.value.telefone || locatarioEditar.value.telefone.replace(/\D/g, '').length < 10) errors.push(t("error.validation.phone_invalid"));
-  if (!locatarioEditar.value.cpf || locatarioEditar.value.cpf.replace(/\D/g, '').length < 11) errors.push(t("error.validation.cpf_size"));
-  if (!locatarioEditar.value.endereco || locatarioEditar.value.endereco.length < 3) errors.push(t("error.validation.address_required"));
-
-  if (errors.length > 0) {
-    errors.forEach(msg => $q.notify({ type: "negative", message: msg, position: "top", timeout: 4000 }));
-    return;
-  }
-
-  const success = await formEditar.value.validate();
-  if (!success) return;
-
-  const dataAPI = {
-    renterName: locatarioEditar.value.nome,
-    renterEmail: locatarioEditar.value.email,
-    renterTelephone: locatarioEditar.value.telefone,
-    renterCpf: locatarioEditar.value.cpf.replace(/\D/g, ''),
-    renterAddress: locatarioEditar.value.endereco,
-  };
-
-  try {
-    await locatarioService.update(locatarioEditar.value.id, dataAPI);
-    $q.notify({ type: "positive", message: t("RentersPage_success_update"), position: "top" });
-    modalEditar.value = false;
-
-    // Atualização local da linha da tabela
-    const index = allLocatarios.value.findIndex(r => r.id === locatarioEditar.value.id);
-    if (index !== -1) {
-      allLocatarios.value[index].renterName = dataAPI.renterName;
-      allLocatarios.value[index].renterEmail = dataAPI.renterEmail;
-      allLocatarios.value[index].renterTelephone = dataAPI.renterTelephone;
-      allLocatarios.value[index].renterCpf = dataAPI.renterCpf;
-      allLocatarios.value[index].renterAddress = dataAPI.renterAddress;
-      allLocatarios.value = [...allLocatarios.value]; // Gatilho de reatividade
+    // Tratamento específico para CPF já cadastrado
+    if (error.response?.status === 409 || (apiMsg && (apiMsg.includes("CPF") || apiMsg.includes("conflict_cpf")))) {
+      errorMessage = t('alerts.cpf_already_exists');
     }
-
-  } catch (error) {
-    console.log("Erro ao atualizar locatário:", error.response?.data);
-    const errorMessage = error.response?.data?.message || error.response?.data?.detail || error.message || t("RentersPage_error_update_default");
 
     $q.notify({
       type: "negative",
@@ -657,10 +621,21 @@ const locatariosFiltrados = computed(() => {
   if (!termo) return allLocatarios.value;
 
   return allLocatarios.value.filter(
-    (locatario) =>
-      locatario.renterName?.toLowerCase().includes(termo) ||
-      locatario.renterEmail?.toLowerCase().includes(termo) ||
-      locatario.renterCpf?.includes(termo)
+    (locatario) => {
+       const phone = locatario.renterTelephone || "";
+       const phoneClean = phone.replace(/\D/g, "");
+       const termClean = termo.replace(/\D/g, "");
+
+       // If searching by "999", match inside cleaned phone
+       const matchPhone = termClean.length > 0 && phoneClean.includes(termClean);
+
+       return (
+         locatario.renterName?.toLowerCase().includes(termo) ||
+         locatario.renterEmail?.toLowerCase().includes(termo) ||
+         locatario.renterCpf?.includes(termo) || 
+         matchPhone
+       );
+    }
   );
 });
 
@@ -678,3 +653,34 @@ watch(locale, () => {
   });
 });
 </script>
+
+<style scoped>
+/* Força o alinhamento central absoluto e altura igual */
+.CadastroBTN,
+.pesquisaALL {
+  height: 40px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove a margem interna que o Quasar coloca no controle do input */
+:deep(.pesquisaALL .q-field__control) {
+  height: 40px !important;
+  margin-top: 0 !important;
+}
+
+/* Ajusta o texto do botão para não cortar */
+.CadastroBTN {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Garante que o input herde a altura correta do container dense */
+.pesquisaALL :deep(.q-field__native),
+.pesquisaALL :deep(.q-field__prefix),
+.pesquisaALL :deep(.q-field__suffix),
+.pesquisaALL :deep(.q-field__input) {
+  min-height: 40px !important;
+}
+</style>

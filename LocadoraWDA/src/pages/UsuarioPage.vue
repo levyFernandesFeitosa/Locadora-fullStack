@@ -1,11 +1,12 @@
 <template>
   <q-page class="q-pa-md" style="background-color: #edead0">
     <div
-      class="q-pa-md example-row-column-width"
+      class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-sm flex-md-row flex-column">
-        <div class="col-grow col-md-6 order-xs-2 order-md-1">
+      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+        <!-- Título -->
+        <div class="col col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="manage_accounts"
@@ -19,27 +20,37 @@
           </div>
         </div>
 
-        <div
-          v-if="userRole === 'ADMIN'"
-          class="col-auto col-md-2 order-xs-3 order-md-2 q-ml-auto q-ml-md-none"
-        >
+        <!-- Espaçador no Desktop -->
+        <q-space class="gt-xs" />
+
+        <!-- Botão de Cadastrar -->
+        <div class="col-auto">
           <q-btn
-            class="CadastroBTN no-wrap q-px-md"
+            v-if="userRole === 'ADMIN'"
+            class="CadastroBTN no-wrap q-px-md q-mb-none"
+            style="height: 40px"
             :label="$t('UsersPage_register_button')"
             color="primary"
             @click="abrirModalCadastro"
             icon="person_add"
             no-caps
+            unelevated
           />
         </div>
 
-        <div class="col-12 col-md-4 order-xs-1 order-md-3">
+        <!-- Barra de Pesquisa -->
+        <div class="col-12 col-sm-auto">
           <q-input
-            class="pesquisaALL"
-            standout
+            class="pesquisaALL rounded-borders q-mt-none"
+            outlined
             v-model="pesquisa"
             :label="$t('UsersPage_search_placeholder')"
+            debounce="300"
+            clearable
+            dense
+            bg-color="white"
             hide-bottom-space
+            style="min-width: 300px; height: 40px; margin: 0 !important;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -173,7 +184,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoUsuario.nome"
-                  :label="$t('UsersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('UsersPage_input_name_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   hide-bottom-space
                 />
@@ -183,7 +194,7 @@
                   class="inputModal"
                   outlined
                   v-model="novoUsuario.email"
-                  :label="$t('UsersPage_input_email_label') + ' (ex@ex.com)'"
+                  :label="$t('UsersPage_input_email_label') + $t('general_email_format')"
                   type="email"
                   :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
                   hide-bottom-space
@@ -193,9 +204,9 @@
                 <q-input
                   class="inputModal"
                   outlined
-                  v-model="novoUsuario.senha"
-                   :label="$t('UsersPage_input_password_label') + ' (mín. 8 caracteres)'"
-                   type="password"
+                   v-model="novoUsuario.senha"
+                    :label="$t('UsersPage_input_password_label') + $t('general_min_3_chars').replace('3', '8')"
+                    type="password"
                    :rules="[val => !!val || '', val => val.length >= 8 || '']"
                    hide-bottom-space
                  />
@@ -210,7 +221,7 @@
                   option-label="label"
                   emit-value
                   map-options
-                  :label="$t('UsersPage_input_role_label') + ' (Selecione)'"
+                  :label="$t('UsersPage_input_role_label') + $t('general_select')"
                   :rules="[val => !!val || '']"
                   hide-bottom-space
                 />
@@ -247,7 +258,7 @@
                   class="inputModal"
                   outlined
                   v-model="usuarioEditar.nome"
-                  :label="$t('UsersPage_input_name_label') + ' (mín. 3 caracteres)'"
+                  :label="$t('UsersPage_input_name_label') + $t('general_min_3_chars')"
                   :rules="[val => !!val || '', val => val.length >= 3 || '']"
                   hide-bottom-space
                 />
@@ -257,7 +268,7 @@
                   class="inputModal"
                   outlined
                   v-model="usuarioEditar.email"
-                  :label="$t('UsersPage_input_email_label') + ' (ex@ex.com)'"
+                  :label="$t('UsersPage_input_email_label') + $t('general_email_format')"
                   type="email"
                   :rules="[val => !!val || '', val => /.+@.+\..+/.test(val) || '']"
                   hide-bottom-space
@@ -267,9 +278,9 @@
                 <q-input
                   class="inputModal"
                   outlined
-                  v-model="usuarioEditar.senha"
-                   :label="$t('UsersPage_input_new_password_label') + ' (mín. 8 caracteres)'"
-                   type="password"
+                   v-model="usuarioEditar.senha"
+                    :label="$t('UsersPage_input_new_password_label') + $t('general_min_3_chars').replace('3', '8')"
+                    type="password"
                    :rules="[val => !val || val.length >= 8 || '']"
                    hide-bottom-space
                  />
@@ -294,7 +305,7 @@
                   option-label="label"
                   emit-value
                   map-options
-                  :label="$t('UsersPage_input_role_label') + ' (Selecione)'"
+                  :label="$t('UsersPage_input_role_label') + $t('general_select')"
                   :rules="[val => !!val || '']"
                   hide-bottom-space
                 />
@@ -713,3 +724,34 @@ watch(locale, () => {
   });
 });
 </script>
+
+<style scoped>
+/* Força o alinhamento central absoluto e altura igual */
+.CadastroBTN,
+.pesquisaALL {
+  height: 40px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Remove a margem interna que o Quasar coloca no controle do input */
+:deep(.pesquisaALL .q-field__control) {
+  height: 40px !important;
+  margin-top: 0 !important;
+}
+
+/* Ajusta o texto do botão para não cortar */
+.CadastroBTN {
+  white-space: nowrap !important;
+  min-width: fit-content !important;
+}
+
+/* Garante que o input herde a altura correta do container dense */
+.pesquisaALL :deep(.q-field__native),
+.pesquisaALL :deep(.q-field__prefix),
+.pesquisaALL :deep(.q-field__suffix),
+.pesquisaALL :deep(.q-field__input) {
+  min-height: 40px !important;
+}
+</style>
