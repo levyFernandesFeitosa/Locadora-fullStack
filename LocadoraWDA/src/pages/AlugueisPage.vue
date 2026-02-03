@@ -5,9 +5,9 @@
       class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+      <div class="row items-center q-col-gutter-sm q-col-gutter-y-sm full-width">
         <!-- Título -->
-        <div class="col col-sm-auto">
+        <div class="col-6 col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="event"
@@ -21,11 +21,11 @@
           </div>
         </div>
 
-        <!-- Espaçador no Desktop -->
+        <!-- Espaçador no Desktop/Tablet Grande -->
         <q-space class="gt-xs" />
 
         <!-- Botão de Cadastrar -->
-        <div class="col-auto">
+        <div class="col-6 col-sm-auto row justify-end">
           <q-btn
             v-if="userRole === 'ADMIN'"
             class="CadastroBTN no-wrap q-px-md q-mb-none"
@@ -51,7 +51,7 @@
             dense
             bg-color="white"
             hide-bottom-space
-            style="min-width: 300px; height: 40px; margin: 0 !important;"
+            style="height: 40px;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -268,7 +268,7 @@
                         <q-item-label>{{ scope.opt.label }}</q-item-label>
                         <q-item-label caption
                           >{{ $t("RentalsPage_available_caption") }}:
-                          {{ scope.opt.totalAvailable }}</q-item-label
+                          {{ scope.opt.totalAvailable ?? 0 }}</q-item-label
                         >
                       </q-item-section>
                     </q-item>
@@ -478,6 +478,9 @@ function customFilter(rows, terms, cols, getCellValue) {
      const name = row.renter?.renterName?.toLowerCase() || "";
      if (name.includes(lowerTerms)) return true;
 
+     const book = row.book?.bookTitle?.toLowerCase() || "";
+     if (book.includes(lowerTerms)) return true;
+
      const phone = row.renter?.renterTelephone || "";
      const phoneClean = phone.replace(/\D/g, "");
      const termClean = lowerTerms.replace(/\D/g, "");
@@ -583,7 +586,7 @@ async function carregarAuxiliares() {
     livrosOptions.value = deps.livros.map(b => ({ 
       label: b.bookTitle, 
       value: b.id,
-      totalAvailable: b.bookTotalQuantity - b.bookRentedQuantity
+      totalAvailable: (Number(b.bookTotal) || 0) - (Number(b.bookInUse) || 0)
     }));
     locatariosOptionsFiltrados.value = locatariosOptions.value;
     livrosOptionsFiltrados.value = livrosOptions.value;
@@ -720,6 +723,12 @@ onMounted(() => {
 .pesquisaALL :deep(.q-field__suffix),
 .pesquisaALL :deep(.q-field__input) {
   min-height: 40px !important;
+}
+
+@media (max-width: 599px) {
+  .row.items-center.q-col-gutter-y-sm.full-width {
+    gap: 10px 0; /* Espaçamento entre as linhas no mobile */
+  }
 }
 </style>
 

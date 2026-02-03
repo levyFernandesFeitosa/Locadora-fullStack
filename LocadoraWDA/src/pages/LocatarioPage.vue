@@ -4,9 +4,9 @@
       class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+      <div class="row items-center q-col-gutter-sm q-col-gutter-y-sm full-width">
         <!-- Título -->
-        <div class="col col-sm-auto">
+        <div class="col-6 col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon name="people" size="32px" class="q-mr-sm" color="primary" />
             <span class=" text-white text-weight-bold ellipsis">{{
@@ -15,11 +15,11 @@
           </div>
         </div>
 
-        <!-- Espaçador no Desktop -->
+        <!-- Espaçador no Desktop/Tablet Grande -->
         <q-space class="gt-xs" />
 
         <!-- Botão de Cadastrar -->
-        <div class="col-auto">
+        <div class="col-6 col-sm-auto row justify-end">
           <q-btn
             v-if="userRole === 'ADMIN'"
             class="CadastroBTN no-wrap q-px-md q-mb-none"
@@ -45,7 +45,7 @@
             dense
             bg-color="white"
             hide-bottom-space
-            style="min-width: 300px; height: 40px; margin: 0 !important;"
+            style="height: 40px;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -82,7 +82,12 @@
       <template v-slot:body="props" v-if="!$q.screen.lt.md">
         <q-tr :props="props">
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.value }}
+            <template v-if="col.name === 'cpf'">
+              {{ col.value ? col.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '' }}
+            </template>
+            <template v-else>
+              {{ col.value }}
+            </template>
           </q-td>
           <q-td v-if="userRole === 'ADMIN'">
             <q-btn
@@ -116,7 +121,12 @@
                   {{ col.label }}:
                 </div>
                 <div class="col-7 text-black">
-                  {{ col.value }}
+                  <template v-if="col.name === 'cpf'">
+                    {{ col.value ? col.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '' }}
+                  </template>
+                  <template v-else>
+                    {{ col.value }}
+                  </template>
                 </div>
               </div>
             </q-card-section>
@@ -201,7 +211,8 @@
                   v-model="novoLocatario.cpf"
                   :label="$t('RentersPage_input_cpf_label') + $t('general_cpf_format')"
                   mask="###.###.###-##"
-                  :rules="[val => !!val || '', val => val.length === 14 || '']"
+                  unmasked-value
+                  :rules="[val => !!val || '', val => val.length === 11 || '']"
                   required
                   hide-bottom-space
                 />
@@ -283,7 +294,8 @@
                    v-model="locatarioEditar.cpf"
                    :label="$t('RentersPage_input_cpf_label') + $t('general_cpf_format')"
                    mask="###.###.###-##"
-                   :rules="[val => !!val || '', val => val.length === 14 || '']"
+                   unmasked-value
+                   :rules="[val => !!val || '', val => val.length === 11 || '']"
                    required
                    hide-bottom-space
                  />
@@ -470,7 +482,7 @@ const editarLocatario = (locatario) => {
     nome: locatario.renterName,
     email: locatario.renterEmail,
     telefone: locatario.renterTelephone,
-    cpf: locatario.renterCpf,
+    cpf: locatario.renterCpf ? String(locatario.renterCpf).replace(/\D/g, '') : "",
     endereco: locatario.renterAddress,
   };
   modalEditar.value = true;
@@ -617,26 +629,35 @@ const excluirLocatario = async () => {
 
 // 5. Computed Properties (Filtragem/Pesquisa)
 const locatariosFiltrados = computed(() => {
-  const termo = pesquisa.value.toLowerCase();
+  const termo = pesquisa.value?.toLowerCase() || "";
   if (!termo) return allLocatarios.value;
 
-  return allLocatarios.value.filter(
-    (locatario) => {
-       const phone = locatario.renterTelephone || "";
-       const phoneClean = phone.replace(/\D/g, "");
-       const termClean = termo.replace(/\D/g, "");
+  return allLocatarios.value.filter(locatario => {
+    const fieldsToSearch = [
+      locatario.renterName,
+      locatario.renterEmail,
+      locatario.renterTelephone,
+      locatario.renterCpf,
+      locatario.renterAddress
+    ];
 
-       // If searching by "999", match inside cleaned phone
-       const matchPhone = termClean.length > 0 && phoneClean.includes(termClean);
+    // Check if any field contains the term
+    const matchesLiteral = fieldsToSearch.some(field => 
+      field?.toString().toLowerCase().includes(termo)
+    );
 
-       return (
-         locatario.renterName?.toLowerCase().includes(termo) ||
-         locatario.renterEmail?.toLowerCase().includes(termo) ||
-         locatario.renterCpf?.includes(termo) || 
-         matchPhone
-       );
+    if (matchesLiteral) return true;
+
+    // Special check for cleaned phone/cpf search
+    const termClean = termo.replace(/\D/g, "");
+    if (termClean.length > 0) {
+      const phoneClean = (locatario.renterTelephone || "").replace(/\D/g, "");
+      const cpfClean = (locatario.renterCpf || "").replace(/\D/g, "");
+      return phoneClean.includes(termClean) || cpfClean.includes(termClean);
     }
-  );
+
+    return false;
+  });
 });
 
 onMounted(() => {
@@ -682,5 +703,11 @@ watch(locale, () => {
 .pesquisaALL :deep(.q-field__suffix),
 .pesquisaALL :deep(.q-field__input) {
   min-height: 40px !important;
+}
+
+@media (max-width: 599px) {
+  .row.items-center.q-col-gutter-y-sm.full-width {
+    gap: 10px 0; /* Espaçamento entre as linhas no mobile */
+  }
 }
 </style>

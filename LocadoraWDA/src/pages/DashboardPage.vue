@@ -1,120 +1,237 @@
 <template>
+
   <q-page class="dashboard-page q-pa-md bg-grey-1" style="background-color: #edead0;">
+
     <div class="dashboard">
+
       <div class="dashboard-grid">
-        <q-card class="card">
-          <q-card-section>
-            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Rental_Distribution') }}</div>
-            <canvas id="graficoDistribuicaoAlugueis"></canvas>
-          </q-card-section>
-        </q-card>
 
         <q-card class="card">
+
           <q-card-section>
-            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Most_Rented_Books') }}</div>
-            <canvas id="graficoLivrosMaisAlugados"></canvas>
+
+            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Rental_Distribution') }}</div>
+
+            <canvas id="graficoDistribuicaoAlugueis"></canvas>
+
           </q-card-section>
+
         </q-card>
+
+
+
+        <q-card class="card">
+
+          <q-card-section>
+
+            <div class="text-h6 q-mb-md">{{ $t('DashboardPage_Most_Rented_Books') }}</div>
+
+            <canvas id="graficoLivrosMaisAlugados"></canvas>
+
+          </q-card-section>
+
+        </q-card>
+
+
 
         <div class="cards-coluna">
+
           <q-card class="card-total">
+
             <q-card-section>
+
               <div class="text-h6">{{ $t('DashboardPage_Total_Rentals') }}</div>
+
               <span class="text-h5">{{ totalAlugueis }}</span>
+
             </q-card-section>
+
           </q-card>
+
           <q-card class="card-total">
+
             <q-card-section>
+
               <div class="text-h6">{{ $t('DashboardPage_Total_Renters') }}</div>
+
               <span class="text-h5">{{ totalLocatarios }}</span>
+
             </q-card-section>
+
           </q-card>
+
         </div>
+
       </div>
+
+
 
       <div class="dashboard-extra">
+
         <q-table
+
           :rows="rows"
+
           :columns="columns"
+
           row-key="nome"
+
           class="minha-tabela-moderna"
+
           :grid="$q.screen.lt.md"
+
           :hide-header="$q.screen.lt.md"
+
           :pagination="$q.screen.lt.md ? { rowsPerPage: 0 } : {
+
               page: 1,
-              rowsPerPage: 
-                $q.screen.md ? 3 : 
-                $q.screen.lg ? 5 : 
+
+              rowsPerPage:
+
+                $q.screen.md ? 3 :
+
+                $q.screen.lg ? 5 :
+
                 5
+
           }"
+
           :rows-per-page-options="[0]"
+
           :hide-pagination="$q.screen.lt.md"
+
         >
-          
+
+         
+
           <template v-slot:header="props">
+
             <q-tr :props="props" class="linha-destacada">
+
               <q-th v-for="col in props.cols" :key="col.name" :props="props">
+
                 {{ col.label }}
+
               </q-th>
+
             </q-tr>
+
           </template>
 
+
+
           <template v-slot:body="props">
+
             <q-tr :props="props">
+
               <q-td v-for="col in props.cols" :key="col.name" :props="props">
+
                 <div v-if="col.name === 'actions'">
+
                     <q-btn
+
                         color="primary"
+
                         icon="edit"
+
                         flat
+
                         dense
+
                         size="sm"
+
                         @click="editRenter(props.row.id)"
+
                     />
+
                     <q-btn
+
                         color="negative"
+
                         icon="delete"
+
                         flat
+
                         dense
+
                         size="sm"
+
                         class="q-ml-sm"
+
                         @click="deleteRenter(props.row.id)"
+
                     />
+
                 </div>
+
                 <div v-else>
+
                     {{ col.value }}
+
                 </div>
+
               </q-td>
+
             </q-tr>
+
           </template>
-          
+
+         
+
           <template v-slot:item="props">
+
             <div
-              class="q-pa-xs col-xs-12 col-sm-6" 
+
+              class="q-pa-xs col-xs-12 col-sm-6"
+
             >
+
               <q-card flat bordered class="q-ma-sm">
+
                 <q-card-section>
+
                   <div
+
                     v-for="col in props.cols.filter(c => c.name !== 'actions')"
+
                     :key="col.name"
+
                     class="row q-mb-sm"
+
                   >
+
                     <div class="col-6 text-weight-bold text-grey-7">
+
                       {{ col.label }}:
+
                     </div>
+
                     <div class="col-6 text-right text-black">
+
                       {{ col.value }}
+
                     </div>
+
                   </div>
-                  
+
+                 
+
                 </q-card-section>
+
               </q-card>
+
             </div>
+
           </template>
+
           </q-table>
+
       </div>
+
     </div>
+
   </q-page>
+
 </template>
 
 <script setup>
@@ -234,9 +351,9 @@ function renderCharts() {
       type: 'pie',
       data: {
         labels: [
-          t('DashboardPage_Returned'),
-          t('DashboardPage_Pending'), 
-          t('DashboardPage_Late')
+          t('RentalsPage_status_delivered_on_time'),
+          t('RentalsPage_status_delivered_with_delay'), 
+          t('RentalsPage_status_late')
         ],
         datasets: [{
           label: t('DashboardPage_Rental_Distribution'), 
@@ -260,6 +377,7 @@ function renderCharts() {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             position: $q.screen.lt.md ? 'bottom' : 'bottom' 
@@ -283,9 +401,19 @@ async function loadData() {
         totalRents: item.rentalCount
     }));
     
-    entreguesNoPrazo.value = data.entreguesNoPrazo;
-    entreguesAtraso.value = data.entreguesAtraso;
-    alugueisAtrasados.value = data.alugueisAtrasados;
+    const now = new Date().toISOString().substring(0, 10);
+    entreguesNoPrazo.value = alugueis.value.filter(r => 
+      r.rentalReturnDate != null && 
+      r.rentalReturnDate.substring(0, 10) <= r.rentalDeadline.substring(0, 10)
+    ).length;
+    entreguesAtraso.value = alugueis.value.filter(r => 
+      r.rentalReturnDate != null && 
+      r.rentalReturnDate.substring(0, 10) > r.rentalDeadline.substring(0, 10)
+    ).length;
+    alugueisAtrasados.value = alugueis.value.filter(r => 
+      r.rentalReturnDate == null && 
+      now > r.rentalDeadline.substring(0, 10)
+    ).length;
     
     await nextTick();
     renderCharts();

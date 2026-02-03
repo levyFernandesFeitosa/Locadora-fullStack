@@ -4,9 +4,9 @@
       class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+      <div class="row items-center q-col-gutter-sm q-col-gutter-y-sm full-width">
         <!-- Título -->
-        <div class="col col-sm-auto">
+        <div class="col-6 col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="manage_accounts"
@@ -20,11 +20,11 @@
           </div>
         </div>
 
-        <!-- Espaçador no Desktop -->
+        <!-- Espaçador no Desktop/Tablet Grande -->
         <q-space class="gt-xs" />
 
         <!-- Botão de Cadastrar -->
-        <div class="col-auto">
+        <div class="col-6 col-sm-auto row justify-end">
           <q-btn
             v-if="userRole === 'ADMIN'"
             class="CadastroBTN no-wrap q-px-md q-mb-none"
@@ -50,7 +50,7 @@
             dense
             bg-color="white"
             hide-bottom-space
-            style="min-width: 300px; height: 40px; margin: 0 !important;"
+            style="height: 40px;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -433,16 +433,22 @@ const columns = computed(() => [
 ]);
 
 const usuariosFiltrados = computed(() => {
-  const term = pesquisa.value.toLowerCase();
-  if (!term) {
-    return allUsers.value;
-  }
-  return allUsers.value.filter(
-    (user) =>
-      user.userName?.toLowerCase().includes(term) || 
-      user.userEmail?.toLowerCase().includes(term) ||
-      user.role?.toLowerCase().includes(term)
-  );
+  const term = pesquisa.value?.toLowerCase() || "";
+  if (!term) return allUsers.value;
+
+  return allUsers.value.filter(user => {
+    const roleLabel = roleMap.value[user.role] || user.role;
+    const fieldsToSearch = [
+      user.userName,
+      user.userEmail,
+      user.role,
+      roleLabel
+    ];
+
+    return fieldsToSearch.some(field => 
+      field?.toString().toLowerCase().includes(term)
+    );
+  });
 });
 
 const modalCadastro = ref(false);
@@ -753,5 +759,11 @@ watch(locale, () => {
 .pesquisaALL :deep(.q-field__suffix),
 .pesquisaALL :deep(.q-field__input) {
   min-height: 40px !important;
+}
+
+@media (max-width: 599px) {
+  .row.items-center.q-col-gutter-y-sm.full-width {
+    gap: 10px 0; /* Espaçamento entre as linhas no mobile */
+  }
 }
 </style>

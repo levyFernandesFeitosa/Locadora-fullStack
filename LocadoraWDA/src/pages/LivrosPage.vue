@@ -4,9 +4,9 @@
       class="q-pa-md"
       style="background-color: #274e55; margin-bottom: 2%; border-radius: 2vh"
     >
-      <div class="row items-center q-col-gutter-y-sm q-gutter-x-md full-width">
+      <div class="row items-center q-col-gutter-sm q-col-gutter-y-sm full-width">
         <!-- Título -->
-        <div class="col col-sm-auto">
+        <div class="col-6 col-sm-auto">
           <div class="titulo flex items-center">
             <q-icon
               name="menu_book"
@@ -20,11 +20,11 @@
           </div>
         </div>
 
-        <!-- Espaçador no Desktop -->
+        <!-- Espaçador no Desktop/Tablet Grande -->
         <q-space class="gt-xs" />
 
         <!-- Botão de Cadastrar -->
-        <div class="col-auto">
+        <div class="col-6 col-sm-auto row justify-end">
           <q-btn
             v-if="userRole === 'ADMIN'"
             class="CadastroBTN no-wrap q-px-md q-mb-none"
@@ -50,7 +50,7 @@
             dense
             bg-color="white"
             hide-bottom-space
-            style="min-width: 300px; height: 40px; margin: 0 !important;"
+            style="height: 40px;"
           >
             <template v-slot:append>
               <q-icon name="search" />
@@ -204,7 +204,7 @@
                   class="inputModal"
                   outlined
                   v-model="bookLaunchDisplay"
-                  :mask="dateMask"
+                  :mask="'##/##/####'"
                   :label="$t('BooksPage_input_launch_date_label') + ' (' + dateMask + ')'"
                   :rules="[val => !!val || '', val => new Date(val.split('/').reverse().join('-')) <= new Date() || '']"
                   hide-bottom-space
@@ -360,20 +360,18 @@ function customFilter(rows, terms, cols, getCellValue) {
   const lowerTerms = terms.toLowerCase();
 
   return rows.filter(row => {
-    // Title
-    if (row.bookTitle?.toLowerCase().includes(lowerTerms)) return true;
-    
-    // Author
-    if (row.bookAuthor?.toLowerCase().includes(lowerTerms)) return true;
+    const fieldsToSearch = [
+      row.bookTitle,
+      row.bookAuthor,
+      row.publisher?.publishersName,
+      row.bookTotal,
+      row.bookInUse,
+      formatarDataExibicao(row.bookLaunch)
+    ];
 
-    // Publisher
-    if (row.publisher?.publishersName?.toLowerCase().includes(lowerTerms)) return true;
-
-    // Launch Date (Formatted)
-    const formattedDate = formatarDataExibicao(row.bookLaunch);
-    if (formattedDate.includes(lowerTerms)) return true;
-
-    return false;
+    return fieldsToSearch.some(field => 
+      field?.toString().toLowerCase().includes(lowerTerms)
+    );
   });
 }
 const opcoesEditoras = ref([]);
@@ -806,5 +804,11 @@ watch(locale, () => {
 .pesquisaALL :deep(.q-field__suffix),
 .pesquisaALL :deep(.q-field__input) {
   min-height: 40px !important;
+}
+
+@media (max-width: 599px) {
+  .row.items-center.q-col-gutter-y-sm.full-width {
+    gap: 10px 0; /* Espaçamento entre as linhas no mobile */
+  }
 }
 </style>
