@@ -85,6 +85,13 @@
             <template v-if="col.name === 'cpf'">
               {{ col.value ? col.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '' }}
             </template>
+            <template v-else-if="col.name === 'notifications'">
+              <q-icon
+                :name="(props.row.activeNotifications ?? false) ? 'notifications_active' : 'notifications_off'"
+                :color="(props.row.activeNotifications ?? false) ? 'positive' : 'grey-7'"
+                size="sm"
+              />
+            </template>
             <template v-else>
               {{ col.value }}
             </template>
@@ -123,6 +130,13 @@
                 <div class="col-7 text-black">
                   <template v-if="col.name === 'cpf'">
                     {{ col.value ? col.value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : '' }}
+                  </template>
+                  <template v-else-if="col.name === 'notifications'">
+                    <q-icon
+                      :name="(props.row.activeNotifications ?? false) ? 'notifications_active' : 'notifications_off'"
+                      :color="(props.row.activeNotifications ?? false) ? 'positive' : 'grey-7'"
+                      size="sm"
+                    />
                   </template>
                   <template v-else>
                     {{ col.value }}
@@ -228,6 +242,13 @@
                   hide-bottom-space
                 />
               </div>
+              <div class="col-12">
+                <q-toggle
+                  v-model="novoLocatario.notificacoesAtivas"
+                  :label="$t('RentersPage_input_notifications_label')"
+                  color="primary"
+                />
+              </div>
             </div>
           </q-card-section>
           <q-card-actions class="botoesModal">
@@ -309,6 +330,13 @@
                    required
                    hide-bottom-space
                  />
+              </div>
+              <div class="col-12">
+                <q-toggle
+                  v-model="locatarioEditar.notificacoesAtivas"
+                  :label="$t('RentersPage_input_notifications_label')"
+                  color="primary"
+                />
               </div>
             </div>
           </q-card-section>
@@ -396,6 +424,7 @@ const novoLocatario = ref({
   telefone: "",
   cpf: "",
   endereco: "",
+  notificacoesAtivas: true,
 });
 
 const modalEditar = ref(false);
@@ -406,6 +435,7 @@ const locatarioEditar = ref({
   telefone: "",
   cpf: "",
   endereco: "",
+  notificacoesAtivas: true,
 });
 const modalExcluir = ref(false);
 
@@ -438,10 +468,10 @@ const columns = computed(() => [
     align: "left",
   },
   {
-    name: "address",
-    label: t("RentersPage_column_address"),
-    field: "renterAddress",
-    align: "left",
+    name: "notifications",
+    label: t("RentersPage_input_notifications_label"),
+    field: "activeNotifications",
+    align: "center",
   },
 ]);
 
@@ -463,6 +493,7 @@ const abrirModalCadastro = () => {
     telefone: "",
     cpf: "",
     endereco: "",
+    notificacoesAtivas: true,
   };
   modalCadastro.value = true;
 };
@@ -484,6 +515,7 @@ const editarLocatario = (locatario) => {
     telefone: locatario.renterTelephone,
     cpf: locatario.renterCpf ? String(locatario.renterCpf).replace(/\D/g, '') : "",
     endereco: locatario.renterAddress,
+    notificacoesAtivas: !!(locatario.activeNotifications ?? false),
   };
   modalEditar.value = true;
 };
@@ -555,6 +587,7 @@ const salvarLocatario = async (isEdit = false) => {
     renterTelephone: form.telefone,
     renterCpf: form.cpf.replace(/\D/g, ''),
     renterAddress: form.endereco,
+    activeNotifications: form.notificacoesAtivas,
   };
 
   try {

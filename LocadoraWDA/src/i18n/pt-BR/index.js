@@ -63,6 +63,7 @@ export default {
   RentersPage_input_phone_label: "Telefone",
   RentersPage_input_cpf_label: "CPF",
   RentersPage_input_address_label: "Endereço",
+  RentersPage_input_notifications_label: "Notificações Ativas",
   RentersPage_cancel_button: "Cancelar",
   RentersPage_update_button: "Atualizar",
   RentersPage_close_button: "Fechar",
@@ -185,6 +186,7 @@ export default {
   RentalsPage_column_status: 'Status',
   RentalsPage_tooltip_receive: 'Marcar como Recebido',
   RentalsPage_tooltip_edit: 'Editar Prazo de Devolução',
+  RentalsPage_tooltip_whatsapp: 'Notificar via WhatsApp',
   RentalsPage_modal_register_title: 'Cadastrar Aluguel',
   RentalsPage_modal_update_title: 'Atualizar Aluguel',
   RentalsPage_input_renter_label: 'Locatário',
@@ -349,4 +351,6 @@ export default {
   'general_success_save': 'Salvo com sucesso!',
   'alerts.rental_already_exists': 'Este locatário já possui um aluguel ativo deste livro.',
   'alerts.cpf_already_exists': 'Este CPF já está cadastrado para outro locatário.',
+  'whatsapp.reminder': "Olá {nome}, este é um lembrete da Locadora. O livro '{livro}' deve ser entregue em {data}. Aguardamos você!",
+  'whatsapp.delay': "Olá {nome}, notamos que a devolução do livro '{livro}' está pendente (prazo: {data}). Por favor, regularize assim que possível.",
 };

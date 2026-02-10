@@ -1,6 +1,5 @@
 package com.WDA.BookRentalStore.renter.model;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,15 +25,21 @@ public class Renter {
     private String renterCpf;
 
     private String renterAddress;
+    private Boolean activeNotifications = true;
 
-    public Renter (Integer id, String renterName, String renterEmail, String renterTelephone, String renterCpf, String renterAddress){
+    public Boolean getActiveNotifications() {
+        return activeNotifications != null ? activeNotifications : false;
+    }
+
+    public Renter(Integer id, String renterName, String renterEmail, String renterTelephone, String renterCpf,
+            String renterAddress, Boolean activeNotifications) {
         this.id = id;
         this.renterName = renterName;
         this.renterEmail = renterEmail;
         this.renterTelephone = renterTelephone;
         this.renterCpf = renterCpf;
         this.renterAddress = renterAddress;
+        this.activeNotifications = activeNotifications;
     }
-
 
 }

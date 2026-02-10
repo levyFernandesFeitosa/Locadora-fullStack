@@ -110,6 +110,16 @@
           </q-td>
           <q-td v-if="userRole === 'ADMIN'">
             <q-btn
+              v-if="props.row.renter && (props.row.renter.activeNotifications ?? false)"
+              flat
+              round
+              icon="img:https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+              color="green"
+              @click="abrirWhatsApp(props.row)"
+            >
+              <q-tooltip>{{ $t('RentalsPage_tooltip_whatsapp') }}</q-tooltip>
+            </q-btn>
+            <q-btn
               v-if="isRentalActive(props.row)"
               dense
               flat
@@ -166,6 +176,14 @@
             <q-separator />
 
             <q-card-actions align="right" v-if="userRole === 'ADMIN'">
+              <q-btn
+                v-if="props.row.renter && (props.row.renter.activeNotifications ?? false)"
+                flat
+                round
+                icon="img:https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+                color="green"
+                @click="abrirWhatsApp(props.row)"
+              />
               <q-btn
                 v-if="isRentalActive(props.row)"
                 dense
@@ -688,6 +706,50 @@ async function executarRecebimento() {
     $q.notify({ type: "negative", message: msg });
   } finally { recebendo.value = false; }
 }
+
+const prepararMensagemWhatsApp = (aluguel) => {
+  const nome = aluguel.renter?.renterName || "";
+  const livro = aluguel.book?.bookTitle || "";
+  const telefone = (aluguel.renter?.renterTelephone || "").replace(/\D/g, "");
+  const linkBase = "https://api.whatsapp.com/send";
+
+  // Lógica de Datas
+  const hoje = new Date();
+  hoje.setHours(0,0,0,0);
+  
+  const prazoRaw = aluguel.rentalDeadline?.substring(0, 10);
+  if (!prazoRaw) return "";
+  
+  const [year, month, day] = prazoRaw.split('-').map(Number);
+  const prazo = new Date(year, month - 1, day);
+  prazo.setHours(0,0,0,0);
+  
+  const diffTime = prazo - hoje;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  let mensagem = "";
+  if (diffDays < 0) {
+    // Atraso
+    mensagem = `Olá ${nome}, notamos que a devolução do livro '${livro}' está pendente (prazo era ${formatarData(aluguel.rentalDeadline)}). Por favor, regularize assim que possível.`;
+  } else if (diffDays === 1) {
+    // Urgência (Amanhã)
+    mensagem = `Olá ${nome}! Como seu prazo é curto, lembramos que a devolução do livro '${livro}' é amanhã!`;
+  } else if (diffDays === 3) {
+    // Aviso Prévio (3 dias)
+    mensagem = `Olá ${nome}! Lembramos que a devolução do livro '${livro}' é em 3 dias (${formatarData(aluguel.rentalDeadline)}).`;
+  } else {
+    // Lembrete Geral
+    mensagem = `Olá ${nome}, este é um lembrete da Locadora. O livro '${livro}' deve ser entregue em ${formatarData(aluguel.rentalDeadline)}. Aguardamos você!`;
+  }
+
+  const textoCodificado = encodeURIComponent(mensagem);
+  return `${linkBase}?phone=55${telefone}&text=${textoCodificado}`;
+};
+
+const abrirWhatsApp = (row) => {
+  const link = prepararMensagemWhatsApp(row);
+  if (link) window.open(link, '_blank');
+};
 
 onMounted(() => {
   carregarAlugueis();
